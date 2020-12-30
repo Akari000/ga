@@ -66,8 +66,10 @@ void Crossover(int parent1, int parent2, int child1, int child2){
     int i;
 
     //交叉
+    PrintCrossover(BEFORE, parent1, parent2, child1, child2);
+
     for(i=0; i<LEN_CHROM; i++){
-        if((double)rand()/RANDOM_MAX >= P_CROSS){  //確率0.5で交叉
+        if((double)rand()/RANDOM_MAX < P_CROSS){  //確率0.5で交叉
             chrom[child1][i] = chrom[parent2][i];
             chrom[child2][i] = chrom[parent1][i];
         } else {                                  //それ以外は交叉せずそのまま格納
@@ -75,6 +77,11 @@ void Crossover(int parent1, int parent2, int child1, int child2){
             chrom[child2][i] = chrom[parent2][i];
         }
     }
+    //各子供の適合度を格納
+    fitness[child1] = ObjFunc(child1);
+    fitness[child2] = ObjFunc(child2);
+
+    PrintCrossover(AFTER, parent1, parent2, child1, child2);
 }
 
 //突然変異
