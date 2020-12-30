@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
 
 #define MAX_GEN      30  //最大世代交替
 #define POP_SIZE     12  //集団のサイズ
@@ -69,7 +70,7 @@ void Crossover(int parent1, int parent2, int child1, int child2){
     PrintCrossover(BEFORE, parent1, parent2, child1, child2);
 
     for(i=0; i<LEN_CHROM; i++){
-        if((double)rand()/RANDOM_MAX < P_CROSS){  //確率0.5で交叉
+        if((double)rand()/RAND_MAX < P_CROSS){  //確率0.5で交叉
             chrom[child1][i] = chrom[parent2][i];
             chrom[child2][i] = chrom[parent1][i];
         } else {                                  //それ以外は交叉せずそのまま格納
@@ -85,3 +86,19 @@ void Crossover(int parent1, int parent2, int child1, int child2){
 }
 
 //突然変異
+Mutation(int child){
+    int n_mutate;
+    int scale;
+    double random;
+
+    random = (double)rand()/(double)RAND_MAX; // 0<=random<1
+    if(rand < P_MUTATION){
+        //突然変異位置（n_mutate=0,...,96）
+        n_mutate = rand()%LEN_CHROM;
+
+        //突然変異
+        PrintMutation(BEFORE, child, n_mutate);
+        //scale = rand() % (音階格納する配列の要素数(24+1)もしくはその変数)
+        //chrom[child][n_mutate] = 音階格納する配列[scale]
+    }
+}
