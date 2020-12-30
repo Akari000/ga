@@ -15,7 +15,7 @@
 
 int chrom[POP_SIZE][LEN_CHROM];  //染色体
 int fitness[POP_SIZE];           //適合度
-int select_parent[POP_SIZE];     //選択された親個体の要素番号（昇順）
+int sort_fitness[POP_SIZE];     //選択された親個体の要素番号（昇順）
 int max, min, sumfitness;        //適合度のmax,min,sum
 int n_min;                       //適合度のminの添え字
 
@@ -55,19 +55,18 @@ void Select(){
         for(j=i; j<(POP_SIZE-1); j++){
             if(fitness[j]>max)  max = j; //適応度が最大の個体の要素を探索
         }
-        select_parent[i] = max; //適応度が最大の個体の要素を格納
+        sort_fitness[i] = max; //適応度が最大の個体の要素を格納
     }
 }
 
 //交叉
 void Crossover(int parent1, int parent2, int *child1, child2){
     int min 2;
-    int i, j;
-
-    //一番小さい値を子供としてセット
-    *child1 = n_min;
-    //二番目に小さい値を見つける
-
+    int n_cross[LEN_CHROM] = {};
+    int i;
+    
+    //交叉セルの決定
+    for(i=0; i<LEN_CHROM; i++){
+        if( (double)rand()/RANDOM_MAX > 0.5)    n_cross[i] = 1;  //確率が0.5の場合，i番目のセルを1に
+    }
 }
-
-//交叉表示
