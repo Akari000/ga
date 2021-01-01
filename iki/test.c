@@ -75,11 +75,19 @@ PrintCrossover(int flag, int parent1, int parent2, int child1, int child2){
     }
 }
 
-//
+//突然変異位置と突然変異前後の子供個体の表示
 PrintMutation(int flag, int child, int n_mutate){
     switch(flag){
         case BEFORE:
-            printf("child(OLD)");
+            printf("<child(OLD)> ");
+            PrintEachChromFitness(child);
+            printf("n_mutate=%d\n", n_mutate);  //突然変異位置の表示
+            break;
+        case AFTER:
+            printf("<child(NEW)> ");
+            PrintEachChromFitness(child);
+            printf("-----------------------------------------------------------------\n");
+            break;
     }
 }
 
@@ -91,19 +99,16 @@ Generation(int gen){
     int n_delete = 7;     //子供に置き換える除去する個体の要素数を格納
     int i, j;
 
-    //集団の表示
-    Statistics();
-    PrintStatistics(gen);
-
     //世代交替（？）
+    PrintStatistics(gen);
     Statistics();
     Select();   //どっちかというとソート
     for(i=0; i<(n_gen-1); i++){     //(1,2),(1,3),(2,3)の順で子供*2を作る
        for(j=i+1; j<n_gen; j++) 
           parent1 = sort_chrom[i];  //適応度の高い個体の要素順に並べたsort_chromから取り出す
           parent2 = sort_chrom[j];  //上記に同じ
-          child1 = n_delete;         //適応度が7～12番目の個体を新しい子供で置き換えていく
-          child2 = n_delete+1;
+          child1 = n_delete;        //適応度が7～12番目の個体を新しい子供で置き換えていく
+          child2 = n_delete+1;      //上記に同じ
           Crossover(parent1, parent2, child1, child2);
           Mutation(child1);
           Mutation(child2);
