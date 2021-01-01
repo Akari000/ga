@@ -17,15 +17,37 @@ int fitness[POP_SIZE];          //適合度
 int sort_chrom[POP_SIZE];       //選択された親個体の要素番号（高い順）
 int max, min, sumfitness;       //適合度のmax,min,sum
 
+//ファイルオープンエラー処理
+int FileOpenError(FILE *fp){
+    if (fp == NULL){
+        printf("ファイルが開けませんでした。\n");
+        exit(1);
+    }
+}
+
 //引数iに対応する個体の遺伝子情報と適合度を表示
 PrintEachChromFitness(int i){
     int j;
+    FILE *fp;
+    
+    fp = fopen("result_file.txt", "a");
+    FileOpenError(fp);
+    
     printf("個体%d : %d\n", i, fitness[i]);
     for(j=0; j<LEN_CHROM; j++){
         if((j%32 == 0) && (j != 0))  printf("\n");  //セルが32個毎に改行
         printf("%2d ", chrom[i][j]);
     }
     printf("\n");
+    
+    //ファイルへの書き込み
+    fprintf(fp, "個体%d : %d\n", i, fitness[i])
+    for(j=0; j<LEN_CHROM; j++){
+        if((j%32 == 0) && (j != 0))  fprintf(fp, "\n");
+        fprintf(fp, "%2d ", chrom[i][j]);
+    }
+    fprintf(fp, "\n");
+    fclose(fp);
 }
 
 //個体ごとに遺伝子情報と適合度を表示する関数を呼び出す
@@ -39,56 +61,97 @@ PrintChromFitness(){
 //世代数，適合度の最大値，最小値，合計値，平均値を表示
 PrintStatistics(int gen){
     double ave;
-    ave = (double)sumfitness/(double)POP_SIZE
+    FILE *fp;
+    
+    fp = fopen("result_file.txt", "a");
+    FileOpenError(fp);
+    
+    ave = (double)sumfitness/(double)POP_SIZE;
     printf("[gen=%2d] max=%d min=%d sumfitness=%d ave=%f\n", gen, max, min, sumfitness, ave);
+    
+    //ファイルへの書き込み
+    fprintf(fp, "[gen=%2d] max=%d min=%d sumfitness=%d ave=%f\n", gen, max, min, sumfitness, ave);
+    fclose(fp);
 }
 
 //選択された親，除去された個体，新たな子供のそれぞれの遺伝子情報と適合度を表示する関数を呼び出す
 PrintCrossover(int flag, int parent1, int parent2, int child1, int child2){
     int i;
+    FILE *fp;
+    
+    fp = fopen("result_file.txt", "a");
+    FileOpenError(fp);
     
     switch(flag){
         case BEFORE:
             printf("<parent1> ");
+            fprintf(fp, "<parent1> ");  //ファイルへの書き込み
             PrintEachChromFitness(parent1);
             printf("<parent2> ");
+            fprintf(fp, "<parent2> ");  //ファイルへの書き込み
             PrintEachChromFitness(parent2);
             printf("<delete1> ");
+            fprintf(fp, "<delete1> ");  //ファイルへの書き込み
             PrintEachChromFitness(child1);
             printf("<delete2> ");
+            fprintf(fp, "<delete2> ");  //ファイルへの書き込み
             PrintEachChromFitness(child2);
             break;
         case AFTER:
             //交叉位置を表示
-            printf("交叉位置:\n")
+            printf("交叉位置:\n");
             for(i=0; i<LEN_CHROM; i++){
                 if((i%32 == 0) && (i != 0))  printf("\n");  //セルが32個毎に改行
                 printf("%2d ", n_cross[i]);
             }
+            
+            //ファイルへの書き込み
+            fprintf(fp, "交叉位置:\n");
+            for(i=0; i<LEN_CHROM; i++){
+                if((i%32 == 0) && (i != 0))  fprintf(fp, "\n");
+                fprintf(fp, "%2d ", n_cross[i]);
+            }            
+
             printf("\n");
+            fprintf(fp, "\n");
+            
             printf("<child1> ");
+            fprintf(fp, "<child1> ");   //ファイルへの書き込み
             PrintEachChromFitness(child1);
             printf("<child2> ");
+            fprintf(fp, "<child2> ");   //ファイルへの書き込み
             PrintEachChromFitness(child2);
             printf("-----------------------------------------------------------------\n");
+            fprintf(fp, "-----------------------------------------------------------------\n");
             break;
     }
+    fclose(fp);
 }
 
 //突然変異位置と突然変異前後の子供個体の表示
 PrintMutation(int flag, int child, int n_mutate){
+    FILE *fp;
+    
+    fp = fopen("result_file.txt", "a");
+    FileOpenError(fp);
+    
     switch(flag){
         case BEFORE:
             printf("<child(OLD)> ");
+            fprintf(fp, "<child(OLD)> ");   //ファイルへの書き込み
             PrintEachChromFitness(child);
             printf("n_mutate=%d\n", n_mutate);  //突然変異位置の表示
+            fprintf(fp, "n_mutate=%d\n", n_mutate); //ファイルへの書き込み
             break;
         case AFTER:
             printf("<child(NEW)> ");
+            fprintf(fp, "<child(NEW)> ");   //ファイルへの書き込み
             PrintEachChromFitness(child);
             printf("-----------------------------------------------------------------\n");
+            fprintf(fp, "-----------------------------------------------------------------\n");
             break;
     }
+    fclose(fp);
 }
 
 //第1世代の処理
