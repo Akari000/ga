@@ -176,3 +176,14 @@ Mutation(int child){
         PrintMutation(AFTER, child, n_mutate);
     }
 }
+
+//メイン関数
+void main(int argc, char**argv)
+{
+    int gen;
+    
+    Initilize();
+    for(gen=1; gen<=MAX_GEN; gen++){
+        Generation(gen);
+    }
+}
