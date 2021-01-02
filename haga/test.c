@@ -7,7 +7,7 @@
 #define LEN_CHROM    32*3//一個体の遺伝子の長さ
 #define LEN_SOUND    24+1 //音数(無音は0)
 #define GEN_GAP      0.2 //世代交替の割合
-#define P_CROSS      0.5 //一様交叉率
+// #define P_CROSS      0.5 //一様交叉率
 #define P_MUTATION    0.1 //突然変異の確率
 
 #define RANDOM_MAX   32767
@@ -19,9 +19,10 @@ int fitness[POP_SIZE];          //適合度
 int sort_chrom[POP_SIZE];       //選択された親個体の要素番号（高い順）
 int max, min, sumfitness;       //適合度のmax,min,sum
 int n_min;                      //適合度のminの添字
+double P_CROSS=0.5;             //一様交叉率
 static unsigned long int next=1;    //擬似乱数
 
-char Num2Sound[25][5] = {
+char Num2Sound[25][10] = {
     "  ",    // 0
     "ド4",    // 1 ド
     "ド#4",   // 2
@@ -49,33 +50,33 @@ char Num2Sound[25][5] = {
     "シ5"     // 24   988Hz
 };
 
-char Num2Bbdur[25][5] = {
+int Num2Bbdur[25] = {
+    0,
     1, //
-    3, // ド
+    3, //
     5, //
-    6, // レ
+    6, //
     8, //
-    10, // ミ
-    12, // ファ
-    13, //
-    15, // ソ
-    17, //
-    18, // ラ
-    20, //
-    22, // シ
-    24, // ド 523Hz
-    1, //
-    3, // レ  587Hz
-    5, //
-    6, // ミ 659Hz
-    8, //   698Hz
     10, //
-    12, //   784Hz
+    12, //
     13, //
-    15, //   880Hz
+    15, //
     17, //
-    18, //   988Hz
-}
+    18, //
+    20, //
+    22, //
+    24, //
+    0,
+    1, //
+    3, //
+    5, //
+    6, //
+    8, //
+    10, //
+    12, //
+    13, //
+    15, //
+};
 //ファイルオープンエラー
 void FileOpenError(FILE *fp){
     if (fp == NULL){
@@ -95,7 +96,7 @@ void PrintEachChromFitness(int i){
     printf("個体%d : %d\n", i, fitness[i]);
     for(j=0; j<LEN_CHROM; j++){
         if((j%32 == 0) && (j != 0))  printf("\n");  //セルが32個毎に改行
-        printf("%2s ", Num2Sound[chrom[i][j]]);
+        printf("%s\t", Num2Sound[chrom[i][j]]);
     }
     printf("\n");
     
@@ -103,7 +104,7 @@ void PrintEachChromFitness(int i){
     fprintf(fp, "個体%d : %d\n", i, fitness[i]);
     for(j=0; j<LEN_CHROM; j++){
         if((j%32 == 0) && (j != 0))  fprintf(fp, "\n");
-        fprintf(fp, "%2s ", Num2Sound[chrom[i][j]]);
+        fprintf(fp, "%s\t", Num2Sound[chrom[i][j]]);
     }
     fprintf(fp, "\n");
     fclose(fp);
@@ -272,9 +273,9 @@ int ScoreChord(int sound1, int sound2, int sound3){
     diff12 = abs(sound1 - sound2);
     diff23 = abs(sound2 - sound3);
     diff31 = abs(sound3 - sound1);
-    if((diff12!= 4) && (diff12 != 5) && (diff12 != 7)) return 0; //長3度, 完全4度, 完全5度  
-    if((diff23 != 4) && (diff23 != 5) && (diff23 != 7)) return 0;
-    if((diff31 != 4) && (diff31 != 5) && (diff31 != 7)) return 0;
+    if((diff12!= 4) && (diff12 != 5) && (diff12 != 7) && (diff12 != 12)) return 0; //長3度, 完全4度, 完全5度  
+    if((diff23 != 4) && (diff23 != 5) && (diff23 != 7) && (diff12 != 12)) return 0;
+    if((diff31 != 4) && (diff31 != 5) && (diff31 != 7) && (diff12 != 12)) return 0;
     return 1;
 }
 
@@ -444,6 +445,7 @@ void Generation(int gen){
     int i, j;
 
     //世代交替（？）
+    P_CROSS = P_CROSS * exp(-5*gen);
     PrintStatistics(gen);
     Statistics();
     Select();   //どっちかというとソート
