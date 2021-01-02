@@ -436,8 +436,8 @@ void Mutation(int child){
 
         //突然変異
         PrintMutation(BEFORE, child, n_mutate);
-        //scale = rand() % (音階格納する配列の要素数(24+1)もしくはその変数)　（乱数か次の音階）
-        //chrom[child][n_mutate] = 音階格納する配列[scale];
+        scale = rand() % 25;
+        chrom[child][n_mutate] = Num2Bbdur[scale];
         fitness[child] = ObjFunc(child);
         PrintMutation(AFTER, child, n_mutate);
     }
