@@ -310,6 +310,27 @@ int ScoreEdur(int sound1, int sound2, int sound3){
     return score;
 }
 
+// 単音 > 二和音 > 3和音の順で音多いと加点する
+int ScoreNChord(int i){
+    int j;
+    int sum=0;
+    int n_single=0, n_double=0, n_triple=0;
+    int score;
+
+    for(j=1;j<LEN_CHROM/3;j++){
+        if (chrom[i][j] == 0) sum++;
+        if (chrom[i][j+32] == 0) sum++;
+        if (chrom[i][j+64] == 0) sum++;
+        if (sum == 0) n_triple++;
+        if (sum == 1) n_double++;
+        if (sum == 2) n_single++;
+    } 
+    if(n_single > n_double) score += 1;
+    if(n_double > n_triple) score += 1;
+    if(n_single > n_triple) score += 1;
+    return score;
+}
+
 // 目的関数
 int ObjFunc(int i){
     int j, sound1, sound2, sound3;
@@ -318,6 +339,7 @@ int ObjFunc(int i){
     int score_chord=0;
     int score_interval=0;
     int score_dur=0;
+    int score_n_chord=0;
 
     for(j=0;j<LEN_CHROM/3;j++){
         sound1 = chrom[i][j];
@@ -336,12 +358,13 @@ int ObjFunc(int i){
         
         // 同じ調を使っているか（Ebで固定）
         // score_dur += ScoreEdur(sound1, sound2, sound3);
-        
+        // 単音が一番多いか
+        score_n_chord += ScoreNChord(i);
     }
     // 短い音が一番多いか（リズム）
     score_rhythm = ScoreRhythm(i) * 4; //*2
 
-    return score_hz + score_rhythm + score_chord + score_interval + score_dur;
+    return score_hz + score_rhythm + score_chord + score_interval + score_dur + score_n_chord;
 }
 
 //初期化
