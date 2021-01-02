@@ -2,8 +2,9 @@
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
-#define MAX_GEN      20  //最大世代交替
+#define MAX_GEN      30  //最大世代交替
 #define POP_SIZE     12  //集団のサイズ
 #define LEN_CHROM    32*3//一個体の遺伝子の長さ
 #define LEN_SOUND    24+1 //音数(無音は0)
@@ -429,9 +430,9 @@ void Crossover(int parent1, int parent2, int child1, int child2){
 void Select(){
     int i, j;
     int n_max;  //適応度が最大の個体の要素を格納
-    int temp, temp_fitness;
+    int temp, temp_fitness[POP_SIZE];
     
-    memcopy(temp_fitness, fitness, sizeof(int) * POP_SIZE);
+    memcpy(temp_fitness, fitness, sizeof(int) * POP_SIZE);
     
     for(i=0; i<POP_SIZE; i++){
         sort_chrom[i] = i;
@@ -439,7 +440,7 @@ void Select(){
 
     //個体のソート，適応度の高い順（選択ソート）
     for(i=0; i<(POP_SIZE-1); i++){
-        for(j=i; j<(POP_SIZE-1); j++){
+        for(j=0; j<(POP_SIZE-1-i); j++){
             if(temp_fitness[j]<temp_fitness[j+1]){ //適応度が最大の個体の要素数を探索
                 temp = temp_fitness[j];
                 temp_fitness[j] = temp_fitness[j+1];
