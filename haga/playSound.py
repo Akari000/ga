@@ -36,8 +36,8 @@ Num2Hz = [
 def play(s: pyaudio.Stream, freq1: float, freq2: float, freq3: float, duration: float):
     # 指定周波数のサイン波を指定秒数分生成
     samples = np.sin(np.arange(int(duration * SAMPLE_RATE)) * freq1 * np.pi * 2 / SAMPLE_RATE)
-    # samples += np.sin(np.arange(int(duration * SAMPLE_RATE)) * freq2 * np.pi * 2 / SAMPLE_RATE)
-    # samples += np.sin(np.arange(int(duration * SAMPLE_RATE)) * freq3 * np.pi * 2 / SAMPLE_RATE)
+    samples += np.sin(np.arange(int(duration * SAMPLE_RATE)) * freq2 * np.pi * 2 / SAMPLE_RATE)
+    samples += np.sin(np.arange(int(duration * SAMPLE_RATE)) * freq3 * np.pi * 2 / SAMPLE_RATE)
     # ストリームに渡して再生
     s.write(samples.astype(np.float32).tostring())
 
@@ -58,7 +58,7 @@ with open('sounds.txt') as f:
             Num2Hz[int(re.findall('(\d+) (\d+) (\d+)', line)[0][0])],
             Num2Hz[int(re.findall('(\d+) (\d+) (\d+)', line)[0][1])],
             Num2Hz[int(re.findall('(\d+) (\d+) (\d+)', line)[0][2])],
-            0.3)
+            1.0)
 
 # ストリームを閉じる
 stream.close()

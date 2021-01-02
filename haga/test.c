@@ -114,12 +114,14 @@ void PrintEachChromFitness(int i, char *label){
     fclose(fp);
 
     //ファイルへの書き込み（play sound 用）
-    fp = fopen("sounds.txt", "w");
+    fp = fopen("sounds.txt", "a");
     FileOpenError(fp);
 
     for(j=0; j<LEN_CHROM/3; j++){
         fprintf(fp, "%d %d %d\n", chrom[i][j], chrom[i][j+32], chrom[i][j+64]);
     }
+    fprintf(fp, "0 0 0\n");
+    fprintf(fp, "0 0 0\n");
     fprintf(fp, "0 0 0\n");
     fprintf(fp, "0 0 0\n");
     fclose(fp);
@@ -290,10 +292,10 @@ int ScoreChord(int sound1, int sound2, int sound3){
     diff12 = abs(sound1 - sound2);
     diff23 = abs(sound2 - sound3);
     diff31 = abs(sound3 - sound1);
-    if((diff12!= 4) && (diff12 != 5) && (diff12 != 7) && (diff12 != 12)) return 0; //長3度, 完全4度, 完全5度  
+    if((diff12!= 4) && (diff12 != 5) && (diff12 != 7) && (diff12 != 12)) return 0; //長3度, 完全4度, 完全5度, オクターブ
     if((diff23 != 4) && (diff23 != 5) && (diff23 != 7) && (diff12 != 12)) return 0;
     if((diff31 != 4) && (diff31 != 5) && (diff31 != 7) && (diff12 != 12)) return 0;
-    return 1;
+    return 2;
 }
 
 // 二分探索：配列aのなかにtargetがあれば1を返す
