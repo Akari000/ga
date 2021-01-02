@@ -433,7 +433,6 @@ void Initialize(){
 void Crossover(int parent1, int parent2, int child1, int child2){
     int i;
     int n_cross[LEN_CHROM] = {0};   //交叉位置を格納
-
     //交叉
     PrintCrossover(BEFORE, parent1, parent2, child1, child2, n_cross);
 
@@ -497,7 +496,7 @@ void Mutation(int child){
     double random;
 
     random = (double)rand()/(double)RAND_MAX; // 0<=random<1
-    if((double)random < (double)(P_MUTATION)){  //確率5%未満なら突然変異
+    if((double)random < (double)(P_MUTATION)){  //確率%1未満なら突然変異
         //突然変異位置（n_mutate=0,...,96）
         n_mutate = rand()%LEN_CHROM;
 
