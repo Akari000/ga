@@ -1,3 +1,11 @@
+/*------------------------------------------------------
+・基本的なプログラムは担当者が作成
+・それぞれの担当プログラムの合体＆エラー処理　⇒　芳賀あかり
+・エラーなし実行結果の不具合の原因究明　⇒　息優奈・芳賀あかり
+・上記の全体的なプログラム修正　⇒　芳賀あかり　（選択関数の修正のみ息優奈）
+--------------------------------------------------------*/
+
+//担当：息優奈・芳賀あかり
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -24,7 +32,7 @@ int n_min;                      //適合度のminの添字
 double P_CROSS=0.5;             //一様交叉率
 static unsigned long int next=1;    //擬似乱数
 
-
+//担当：芳賀あかり
 char Num2Sound[25][10] = {
     "  ",    // 0
     "ド4",    // 1 ド
@@ -53,6 +61,7 @@ char Num2Sound[25][10] = {
     "シ5"     // 24   988Hz
 };
 
+//担当：芳賀あかり
 int Num2Bbdur[25] = {
     0,
     1, //
@@ -80,6 +89,8 @@ int Num2Bbdur[25] = {
     13, //
     15, //
 };
+
+//担当：息優奈
 //ファイルオープンエラー
 void FileOpenError(FILE *fp){
     if (fp == NULL){
@@ -88,6 +99,7 @@ void FileOpenError(FILE *fp){
     }
 }
 
+//担当：息優奈、play soud用ファイル出力追加：芳賀あかり
 //引数iに対応する個体の遺伝子情報と適合度を表示
 void PrintEachChromFitness(int i, char *label){
     int j;
@@ -127,6 +139,7 @@ void PrintEachChromFitness(int i, char *label){
     fclose(fp);
 }
 
+//担当：息優奈
 //個体ごとに遺伝子情報と適合度を表示する関数を呼び出す
 void PrintChromFitness(){
     int i;
@@ -135,6 +148,7 @@ void PrintChromFitness(){
     }
 }
 
+//担当：息優奈
 //世代数，適合度の最大値，最小値，合計値，平均値を表示
 void PrintStatistics(int gen){
     double ave;
@@ -156,6 +170,7 @@ void PrintStatistics(int gen){
     fclose(fp);
 }
 
+//担当：息優奈
 //選択された親，除去された個体，新たな子供のそれぞれの遺伝子情報と適合度を表示する関数を呼び出す
 void PrintCrossover(int flag, int parent1, int parent2, int child1, int child2, int n_cross[]){
     int i;
@@ -210,6 +225,7 @@ void PrintCrossover(int flag, int parent1, int parent2, int child1, int child2, 
     fclose(fp);
 }
 
+//担当：息優奈
 //突然変異位置と突然変異前後の子供個体の表示
 void PrintMutation(int flag, int child, int n_mutate){
     FILE *fp;
@@ -236,6 +252,7 @@ void PrintMutation(int flag, int child, int n_mutate){
     fclose(fp);
 }
 
+//担当：芳賀あかり
 // 擬似乱数
 int Rand(void){
     next = next*1103515245+12345;
@@ -246,6 +263,7 @@ void Srand(unsigned int seed){
     next = seed;
 }
 
+//担当：芳賀あかり
 // 癒しの周波数に近い音が使われているか
 int ScoreHz(int sound1, int sound2, int sound3){
     // 3つのうちどれか一つでもドに近ければ return 1
@@ -257,6 +275,7 @@ int ScoreHz(int sound1, int sound2, int sound3){
     return 0;
 }
 
+//担当：芳賀あかり
 // 短い音が一番多いか（最大3を返す）
 int ScoreRhythm(int i){
     int j;
@@ -286,6 +305,7 @@ int ScoreRhythm(int i){
     return 1;
 }
 
+//担当：芳賀あかり
 //不協和音なら0を返す
 int ScoreChord(int sound1, int sound2, int sound3){
     int diff12, diff23, diff31;
@@ -298,6 +318,7 @@ int ScoreChord(int sound1, int sound2, int sound3){
     return 2;
 }
 
+//担当：芳賀あかり
 // 二分探索：配列aのなかにtargetがあれば1を返す
 int BinarySearch(int a[], int target, int ARRAY_SIZE){
     int left = 0;
@@ -317,6 +338,7 @@ int BinarySearch(int a[], int target, int ARRAY_SIZE){
     return 0;
 }
 
+//担当：芳賀あかり
 //Edurの音があれば+1（最大 3を返す）
 int ScoreEdur(int sound1, int sound2, int sound3){
     int ARRAY_SIZE = 14;
@@ -329,6 +351,7 @@ int ScoreEdur(int sound1, int sound2, int sound3){
     return score;
 }
 
+//担当：芳賀あかり
 // 単音 > 二和音 > 3和音の順で音多いと加点する
 int ScoreNChord(int i){
     int j;
@@ -351,6 +374,7 @@ int ScoreNChord(int i){
     return score;
 }
 
+//担当：芳賀あかり
 // 目的関数
 int ObjFunc(int i){
     int j, sound1, sound2, sound3;
@@ -387,6 +411,7 @@ int ObjFunc(int i){
     return score_hz + score_rhythm + score_chord + score_interval + score_dur + score_n_chord;
 }
 
+//担当：芳賀あかり
 //初期化
 void Initialize(){
     int i, j;
@@ -403,6 +428,7 @@ void Initialize(){
     printf("------------------\n");
 }
 
+//担当：息優奈
 //交叉
 void Crossover(int parent1, int parent2, int child1, int child2){
     int i;
@@ -428,6 +454,7 @@ void Crossover(int parent1, int parent2, int child1, int child2){
     PrintCrossover(AFTER, parent1, parent2, child1, child2, n_cross);
 }
 
+//担当：息優奈
 //選択（選択の変更点memoのファイルを同じとこに置いてるよ）
 void Select(){
     int i, j;
@@ -462,6 +489,7 @@ void Select(){
 
 }
 
+//担当：息優奈
 //突然変異
 void Mutation(int child){
     int n_mutate;
@@ -482,6 +510,7 @@ void Mutation(int child){
     }
 }
 
+//担当：芳賀あかり
 void Statistics(){
     int i;
     max = 0;
@@ -498,6 +527,7 @@ void Statistics(){
     }
 }
 
+//担当：息優奈
 //第1世代の処理
 void Generation(int gen){
     int parent1, parent2; //親の要素数を格納
@@ -525,6 +555,7 @@ void Generation(int gen){
     P_CROSS = P_CROSS * exp((-1/5)*gen);
 }
 
+//担当：息優奈
 //メイン関数
 int main(int argc, char**argv)
 {
