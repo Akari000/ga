@@ -429,14 +429,20 @@ void Crossover(int parent1, int parent2, int child1, int child2){
 void Select(){
     int i, j;
     int n_max;  //適応度が最大の個体の要素を格納
+    int temp;
+    
+    memcpy(sort_chrom, fitness, sizeof(int) * POP_SIZE);
 
     //個体のソート，適応度の高い順（選択ソート）
     for(i=0; i<(POP_SIZE-1); i++){
-        n_max = 0;
+        n_max = sort_max[0];
         for(j=i; j<(POP_SIZE-1); j++){
-            if(fitness[j]>fitness[n_max])  n_max = j; //適応度が最大の個体の要素数を探索
+            if(sort_chrom[j]>n_max){ //適応度が最大の個体の要素数を探索
+                temp = sort_chrom[j];
+                sort_chrom[j] = max;
+                sort_chrom[n_max] = sort_chrom[j];
+            }
         }
-        sort_chrom[i] = n_max; //適応度が高い個体の要素数順に格納
     }
     printf("======select==================================\n");
     for(i=0; i<(POP_SIZE-1); i++){
