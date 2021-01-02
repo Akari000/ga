@@ -434,7 +434,7 @@ void Select(){
     for(i=0; i<(POP_SIZE-1); i++){
         n_max = 0;
         for(j=i; j<(POP_SIZE-1); j++){
-            if(fitness[j]>n_max)  n_max = j; //適応度が最大の個体の要素数を探索
+            if(fitness[j]>fitness[n_max])  n_max = j; //適応度が最大の個体の要素数を探索
         }
         sort_chrom[i] = n_max; //適応度が高い個体の要素数順に格納
     }
