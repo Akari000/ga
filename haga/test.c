@@ -196,14 +196,14 @@ void PrintCrossover(int flag, int parent1, int parent2, int child1, int child2, 
             break;
         case AFTER:
             //交叉位置を表示
-            printf("交叉位置:\n");
+            printf("交叉率：%lf，交叉位置:\n", P_CROSS);
             for(i=0; i<LEN_CHROM; i++){
                 if((i%32 == 0) && (i != 0))  printf("\n");  //セルが32個毎に改行
                 printf("%2d ", n_cross[i]);
             }
             
             //ファイルへの書き込み
-            fprintf(fp, "交叉位置:\n");
+            fprintf(fp, "交叉率：%lf，交叉位置:\n", P_CROSS);
             for(i=0; i<LEN_CHROM; i++){
                 if((i%32 == 0) && (i != 0))  fprintf(fp, "\n");
                 fprintf(fp, "%2d ", n_cross[i]);
@@ -429,31 +429,6 @@ void Initialize(){
 }
 
 //担当：息優奈
-//交叉
-void Crossover(int parent1, int parent2, int child1, int child2){
-    int i;
-    int n_cross[LEN_CHROM] = {0};   //交叉位置を格納
-    //交叉
-    PrintCrossover(BEFORE, parent1, parent2, child1, child2, n_cross);
-
-    for(i=0; i<LEN_CHROM; i++){
-        if((double)rand()/RAND_MAX < P_CROSS){  //確率0.5で交叉
-            chrom[child1][i] = chrom[parent2][i];
-            chrom[child2][i] = chrom[parent1][i];
-            n_cross[i] = 1; //交叉した位置を格納
-        } else {                                //それ以外は交叉せずそのまま格納
-            chrom[child1][i] = chrom[parent1][i];
-            chrom[child2][i] = chrom[parent2][i];
-        }
-    }
-    //各子供の適合度を格納
-    fitness[child1] = ObjFunc(child1);
-    fitness[child2] = ObjFunc(child2);
-
-    PrintCrossover(AFTER, parent1, parent2, child1, child2, n_cross);
-}
-
-//担当：息優奈
 //選択（選択の変更点memoのファイルを同じとこに置いてるよ）
 void Select(){
     int i, j;
@@ -486,6 +461,32 @@ void Select(){
     }
     printf("======select==================================\n");
 
+}
+
+//担当：息優奈
+//交叉
+void Crossover(int parent1, int parent2, int child1, int child2){
+    int i;
+    int n_cross[LEN_CHROM] = {0};   //交叉位置を格納
+    
+    //交叉
+    PrintCrossover(BEFORE, parent1, parent2, child1, child2, n_cross);
+
+    for(i=0; i<LEN_CHROM; i++){
+        if((double)rand()/RAND_MAX < P_CROSS){  //確率0.5で交叉
+            chrom[child1][i] = chrom[parent2][i];
+            chrom[child2][i] = chrom[parent1][i];
+            n_cross[i] = 1; //交叉した位置を格納
+        } else {                                //それ以外は交叉せずそのまま格納
+            chrom[child1][i] = chrom[parent1][i];
+            chrom[child2][i] = chrom[parent2][i];
+        }
+    }
+    //各子供の適合度を格納
+    fitness[child1] = ObjFunc(child1);
+    fitness[child2] = ObjFunc(child2);
+
+    PrintCrossover(AFTER, parent1, parent2, child1, child2, n_cross);
 }
 
 //担当：息優奈
