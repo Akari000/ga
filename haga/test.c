@@ -431,13 +431,15 @@ void Select(){
     int n_max;  //適応度が最大の個体の要素を格納
     int temp;
     
-    memcpy(sort_chrom, fitness, sizeof(int) * POP_SIZE);
+    for(i=0; i<POP_SIZE; i++){
+        sort_chrom[i] = i;
+    }
 
     //個体のソート，適応度の高い順（選択ソート）
     for(i=0; i<(POP_SIZE-1); i++){
-        n_max = sort_max[0];
+        n_max = fitness[0];
         for(j=i; j<(POP_SIZE-1); j++){
-            if(sort_chrom[j]>n_max){ //適応度が最大の個体の要素数を探索
+            if(fitness[j]>n_max){ //適応度が最大の個体の要素数を探索
                 temp = sort_chrom[j];
                 sort_chrom[j] = max;
                 sort_chrom[n_max] = sort_chrom[j];
