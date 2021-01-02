@@ -5,7 +5,7 @@
 #define MAX_GEN      30  //最大世代交替
 #define POP_SIZE     12  //集団のサイズ
 #define LEN_CHROM    32*3//一個体の遺伝子の長さ
-#define LEN_SOUND    24 +1 //音数(無音は0)
+#define LEN_SOUND    24+1 //音数(無音は0)
 #define GEN_GAP      0.2 //世代交替の割合
 #define P_CROSS      0.5 //一様交叉率
 #define P_MUTATION    0.1 //突然変異の確率
@@ -21,35 +21,62 @@ int max, min, sumfitness;       //適合度のmax,min,sum
 int n_min;                      //適合度のminの添字
 static unsigned long int next=1;    //擬似乱数
 
-char Num2Sound[24][5] = {
+char Num2Sound[25][5] = {
     "  ",    // 0
-    "C4",    // 1
-    "C#4",   // 2
-    "D4",    // 3
-    "D#4",   // 4
-    "E4",    // 5
-    "F4",    // 6
-    "F#4",   // 7
-    "G4",    // 8
-    "G#4",   // 9
-    "A4",    // 10
-    "A#4",   // 11
-    "B4",    // 12
-    "C5",    // 13   523Hz（ド）
-    "C5#",   // 14
-    "D5",    // 15   587Hz
-    "D#5",   // 16
-    "E5",    // 17   659Hz
-    "F5",    // 18   698Hz
-    "F#5",   // 19
-    "G5",    // 20   784Hz
-    "G#5",   // 21
-    "A5",    // 22   880Hz
-    "A#5",   // 23
-    "B5"     // 24   988Hz
+    "ド4",    // 1 ド
+    "ド#4",   // 2
+    "レ4",    // 3 レ
+    "レ#4",   // 4
+    "ミ4",    // 5 ミ
+    "ファ4",    // 6 ファ
+    "ファ#4",   // 7
+    "ソ4",    // 8 ソ
+    "ソ#4",   // 9
+    "ラ4",    // 10 ラ
+    "ラ#4",   // 11
+    "シ4",    // 12 シ
+    "ド5",    // 13 ド 523Hz
+    "ド5#",   // 14
+    "レ5",    // 15 レ  587Hz
+    "レ#5",   // 16
+    "ミ5",    // 17 ミ 659Hz
+    "ファ5",    // 18   698Hz
+    "ファ#5",   // 19
+    "ソ5",    // 20   784Hz
+    "ソ#5",   // 21
+    "ラ5",    // 22   880Hz
+    "ラ#5",   // 23
+    "シ5"     // 24   988Hz
 };
 
-//ファイルオープンエラー処理
+char Num2Bbdur[25][5] = {
+    1, //
+    3, // ド
+    5, //
+    6, // レ
+    8, //
+    10, // ミ
+    12, // ファ
+    13, //
+    15, // ソ
+    17, //
+    18, // ラ
+    20, //
+    22, // シ
+    24, // ド 523Hz
+    1, //
+    3, // レ  587Hz
+    5, //
+    6, // ミ 659Hz
+    8, //   698Hz
+    10, //
+    12, //   784Hz
+    13, //
+    15, //   880Hz
+    17, //
+    18, //   988Hz
+}
+//ファイルオープンエラー
 void FileOpenError(FILE *fp){
     if (fp == NULL){
         printf("ファイルが開けませんでした。\n");
@@ -79,6 +106,17 @@ void PrintEachChromFitness(int i){
         fprintf(fp, "%2s ", Num2Sound[chrom[i][j]]);
     }
     fprintf(fp, "\n");
+    fclose(fp);
+
+    //ファイルへの書き込み（play sound 用）
+    fp = fopen("sounds.txt", "w");
+    FileOpenError(fp);
+
+    for(j=0; j<LEN_CHROM/3; j++){
+        fprintf(fp, "%d %d %d\n", chrom[i][j], chrom[i][j+32], chrom[i][j+64]);
+    }
+    fprintf(fp, "0 0 0\n");
+    fprintf(fp, "0 0 0\n");
     fclose(fp);
 }
 
@@ -284,7 +322,7 @@ int ObjFunc(int i){
         sound1 = chrom[i][j];
         sound2 = chrom[i][j+32];
         sound3 = chrom[i][j+64];
-        // 癒し周波数かどうか：真ん中のド(音番号 13)に近ければ加点
+        // 癒し周波数かどうか：真ん中のド(音番号 12)に近ければ加点
         score_hz += ScoreHz(sound1, sound2, sound3);
 
         // 不協和音が無ければ+1
@@ -296,7 +334,7 @@ int ObjFunc(int i){
         }
         
         // 同じ調を使っているか（Ebで固定）
-        score_dur += ScoreEdur(sound1, sound2, sound3);
+        // score_dur += ScoreEdur(sound1, sound2, sound3);
         
     }
     // 短い音が一番多いか（リズム）
@@ -311,6 +349,7 @@ void Initialize(){
     for(i=0;i<POP_SIZE;i++){
         for(j=0;j<LEN_CHROM;j++){
             chrom[i][j]=Rand()%LEN_SOUND;
+            chrom[i][j]=Num2Bbdur[chrom[i][j]];
         }
         fitness[i]=ObjFunc(i);
     }
