@@ -552,7 +552,7 @@ void Generation(int gen){
 
           n_delete = n_delete + 2;
     }
-    P_CROSS = P_CROSS * exp((-1/5)*gen);
+    P_CROSS = P_CROSS * exp((double)-gen/10.0);
 }
 
 //担当：息優奈
