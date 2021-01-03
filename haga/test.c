@@ -12,7 +12,7 @@
 #include <time.h>
 #include <string.h>
 
-#define MAX_GEN      30  //最大世代交替
+#define MAX_GEN      20  //最大世代交替
 #define POP_SIZE     12  //集団のサイズ
 #define LEN_CHROM    32*3//一個体の遺伝子の長さ
 #define LEN_SOUND    24+1 //音数(無音は0)
@@ -62,7 +62,7 @@ char Num2Sound[25][10] = {
 };
 
 //担当：芳賀あかり
-int Num2Bbdur[25] = {
+int Num2Cdur[25] = {
     0,
     1, //
     3, //
@@ -280,37 +280,39 @@ int ScoreHz(int sound1, int sound2, int sound3){
 int ScoreRhythm(int i){
     int j;
     int sum=0;
-    int n_quarter=0, n_half=0, n_whole=0; //４分音符，２分音符，全音符の個数
+    int n_eighth=0, n_quarter=0, n_half=0, n_whole=0; //４分音符，２分音符，全音符の個数
     int score=0;
-    for(j=1;j<LEN_CHROM/3;j++){
-        if (chrom[i][j-1] == chrom[i][j]) sum++;
-        else {
-            if(sum > 8) return 0;
-            sum = 0;
-        }
-    }
     // for(j=1;j<LEN_CHROM/3;j++){
     //     if (chrom[i][j-1] == chrom[i][j]) sum++;
     //     else {
-    //         // if(sum == 2) n_quarter += 1;
-    //         // else if(sum == 4) n_half += 1;
-    //         else if(sum == 8) n_whole += 1;
+    //         if(sum > 8) return 0;
     //         sum = 0;
     //     }
     // }
-    // if(n_quarter > n_half) score += 1;
-    // if(n_half > n_whole) score += 1;
-    // if(n_quarter > n_whole) score += 1;
-    // return score;
-    return 1;
+    for(j=0;j<LEN_CHROM/3;j++){
+        if (chrom[i][j] == chrom[i][j+1]) sum++;
+        else if (chrom[i][j] == chrom[i][j+32+1]) sum++;
+        else if (chrom[i][j] == chrom[i][j+64+1]) sum++;
+        else if (chrom[i][j+32] == chrom[i][j+1]) sum++;
+        else if (chrom[i][j+32] == chrom[i][j+32+1]) sum++;
+        else if (chrom[i][j+32] == chrom[i][j+64+1]) sum++;
+        else if (chrom[i][j+64] == chrom[i][j+1]) sum++;
+        else if (chrom[i][j+64] == chrom[i][j+32+1]) sum++;
+        else if (chrom[i][j+64] == chrom[i][j+64+1]) sum++;
+        else {
+            if(sum == 1) n_eighth += 1;
+            else if(sum == 2) n_quarter += 1;
+            else if(sum == 4) n_half += 1;
+            else if(sum == 8) n_whole += 1;
+            sum = 0;
+        }
+    }
+
+    return n_eighth + (n_quarter*2) + (n_half*3) + (n_whole*4);
 }
 
-<<<<<<< HEAD
-//協和音なら1を返す
-=======
 //担当：芳賀あかり
-//不協和音なら0を返す
->>>>>>> f60c3cc01c07a857e9a17d5ad3f0ff406b2af261
+//協和音なら1を返す
 int ScoreChord(int sound1, int sound2, int sound3){
     int diff12, diff23, diff31;
     diff12 = abs(sound1 - sound2);
@@ -384,7 +386,7 @@ int ObjFunc(int i){
     int score_chord=0;      // 0~32
     int score_interval=0;   // 0~32
     int score_dur=0;
-    int score_n_chord;    // 0~32
+    int score_n_chord=0;    // 0~32
 
     for(j=0;j<LEN_CHROM/3;j++){
         sound1 = chrom[i][j];
@@ -402,7 +404,7 @@ int ObjFunc(int i){
         }
         
         // 単音が一番多いか
-        score_n_chord = ScoreNChord(i);
+        score_n_chord += ScoreNChord(sound1, sound2, sound3);
 
         // 同じ調を使っているか（Ebで固定）
         // score_dur += ScoreEdur(sound1, sound2, sound3);
@@ -411,7 +413,7 @@ int ObjFunc(int i){
     // 短い音が一番多いか（リズム）
     // score_rhythm = ScoreRhythm(i)*32;
 
-    return score_hz + score_rhythm + score_chord + score_interval + score_dur + score_n_chord;
+    return score_hz + (score_rhythm*2) + score_chord + score_interval + score_dur + score_n_chord;
 }
 
 //担当：芳賀あかり
@@ -421,7 +423,7 @@ void Initialize(){
     for(i=0;i<POP_SIZE;i++){
         for(j=0;j<LEN_CHROM;j++){
             chrom[i][j]=rand()%LEN_SOUND;
-            chrom[i][j]=Num2Bbdur[chrom[i][j]];
+            chrom[i][j]=Num2Cdur[chrom[i][j]];
         }
         fitness[i]=ObjFunc(i);
     }
@@ -507,7 +509,7 @@ void Mutation(int child){
         //突然変異
         PrintMutation(BEFORE, child, n_mutate);
         scale = rand() % 25;
-        chrom[child][n_mutate] = Num2Bbdur[scale];
+        chrom[child][n_mutate] = Num2Cdur[scale];
         fitness[child] = ObjFunc(child);
         PrintMutation(AFTER, child, n_mutate);
     }
@@ -555,6 +557,13 @@ void Generation(int gen){
 
           n_delete = n_delete + 2;
     }
+    for(i=0; i<POP_SIZE; i++){ 
+       for(j=0; j<LEN_CHROM/3; j++){
+           if (chrom[i][j] == chrom[i][j+32]) chrom[i][j] = 0;
+           if (chrom[i][j] == chrom[i][j+64]) chrom[i][j] = 0;
+           if (chrom[i][j+32] == chrom[i][j+64]) chrom[i][j+32] = 0;
+       }
+    }
     P_CROSS = P_CROSS * exp((double)-gen/10.0);
 }
 
@@ -563,6 +572,20 @@ void Generation(int gen){
 int main(int argc, char**argv)
 {
     int gen;
+    FILE *fp;
+
+    fp = fopen("result_file.txt", "w");
+    FileOpenError(fp);
+    fclose(fp);
+
+    fp = fopen("avarage.txt", "w");
+    FileOpenError(fp);
+    fclose(fp);
+
+    fp = fopen("sounds.txt", "w");
+    FileOpenError(fp);
+    fclose(fp);
+
     srand((int)time(NULL));
     Initialize();
     for(gen=1; gen<=MAX_GEN; gen++){
