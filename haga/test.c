@@ -286,16 +286,19 @@ int ScoreRhythm(int i){
     return 1;
 }
 
-//不協和音なら0を返す
+//協和音なら1を返す
 int ScoreChord(int sound1, int sound2, int sound3){
     int diff12, diff23, diff31;
     diff12 = abs(sound1 - sound2);
     diff23 = abs(sound2 - sound3);
     diff31 = abs(sound3 - sound1);
-    if((diff12!= 4) && (diff12 != 5) && (diff12 != 7) && (diff12 != 12)) return 0; //長3度, 完全4度, 完全5度, オクターブ
-    if((diff23 != 4) && (diff23 != 5) && (diff23 != 7) && (diff12 != 12)) return 0;
-    if((diff31 != 4) && (diff31 != 5) && (diff31 != 7) && (diff12 != 12)) return 0;
-    return 2;
+    if((diff12 == 4) || (diff12 == 5) || (diff12 == 7) || (diff12 == 12)){ //長3度, 完全4度, 完全5度, オクターブ
+        if((diff23 == 4) || (diff23 == 5) || (diff23 == 7) || (diff12 == 12)){
+            if((diff31 == 4) || (diff31 == 5) || (diff31 == 7) || (diff12 == 12)) return 1;
+        }
+    } 
+
+    return 0;
 }
 
 // 二分探索：配列aのなかにtargetがあれば1を返す
@@ -330,24 +333,18 @@ int ScoreEdur(int sound1, int sound2, int sound3){
 }
 
 // 単音 > 二和音 > 3和音の順で音多いと加点する
-int ScoreNChord(int i){
-    int j;
-    int sum=0;
-    int n_single=0, n_double=0, n_triple=0;
-    int score = 0;
+int ScoreNChord(int sound1, int sound2, int sound3){
 
-    for(j=1;j<LEN_CHROM/3;j++){
-        if (chrom[i][j] == 0) sum++;
-        if (chrom[i][j+32] == 0) sum++;
-        if (chrom[i][j+64] == 0) sum++;
-        if (sum == 0) n_triple++;
-        if (sum == 1) n_double++;
-        if (sum == 2) n_single++;
-    } 
-    
-    if(n_single > n_double) score += 1;
-    // if(n_double > n_triple) score += 1;
-    if(n_single > n_triple) score += 1;
+    int sum=0;
+    int score;
+    if(sound1==0) sum++;
+    if(sound2==0) sum++;
+    if(sound3==0) sum++;
+    if (sum == 0) score = 0;
+    if (sum == 1) score = 1;
+    if (sum == 2) score = 2;
+    if (sum == 3) score = 0;
+
     return score;
 }
 
@@ -359,7 +356,7 @@ int ObjFunc(int i){
     int score_chord=0;      // 0~32
     int score_interval=0;   // 0~32
     int score_dur=0;
-    int score_n_chord=0;    // 0~64
+    int score_n_chord;    // 0~32
 
     for(j=0;j<LEN_CHROM/3;j++){
         sound1 = chrom[i][j];
@@ -373,16 +370,18 @@ int ObjFunc(int i){
 
         // 飛躍が少ないか
         if(j!=0){
-            if(abs(chrom[i][j]-chrom[i][j]) < 8) score_interval += 1;
+            if(abs(chrom[i][j]-chrom[i][j-1]) < 8) score_interval += 1;
         }
         
+        // 単音が一番多いか
+        score_n_chord = ScoreNChord(i);
+
         // 同じ調を使っているか（Ebで固定）
         // score_dur += ScoreEdur(sound1, sound2, sound3);
-        // 単音が一番多いか
-        score_n_chord += ScoreNChord(i);
     }
+
     // 短い音が一番多いか（リズム）
-    score_rhythm = ScoreRhythm(i)*32;
+    // score_rhythm = ScoreRhythm(i)*32;
 
     return score_hz + score_rhythm + score_chord + score_interval + score_dur + score_n_chord;
 }
