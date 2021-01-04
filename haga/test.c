@@ -524,7 +524,7 @@ void Statistics(){
 
     for(i=0;i<POP_SIZE;i++){
         if(fitness[i]>max) max=fitness[i];
-        else if(fitness[i]<max){
+        else if(fitness[i]<min){
             min = fitness[i];
             n_min = i;
         }
