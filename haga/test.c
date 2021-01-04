@@ -580,7 +580,7 @@ int main(int argc, char**argv)
     FileOpenError(fp);
     fclose(fp);
 
-    fp = fopen("avarage.txt", "w");
+    fp = fopen("average.txt", "w");
     FileOpenError(fp);
     fclose(fp);
 
