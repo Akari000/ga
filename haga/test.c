@@ -519,7 +519,7 @@ void Mutation(int child){
 void Statistics(){
     int i;
     max = 0;
-    min = POP_SIZE;
+    min = 1000;
     sumfitness=0;
 
     for(i=0;i<POP_SIZE;i++){
