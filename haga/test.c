@@ -508,6 +508,11 @@ void Mutation(int child){
         //突然変異
         PrintMutation(BEFORE, child, n_mutate);
         scale = rand() % 25;
+        if(scale == chrom[child][n_mutate]){     //もしランダムに選ばれた値が元の値と同じなら次の値にする
+            scale += 1;
+            if(scale > 24)  //もしNum2Cdurの要素数を超える数値になったら0にする
+                scale = 0;
+        }
         chrom[child][n_mutate] = Num2Cdur[scale];
         fitness[child] = ObjFunc(child);
         PrintMutation(AFTER, child, n_mutate);
