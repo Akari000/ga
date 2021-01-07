@@ -29,7 +29,6 @@ int sort_chrom[POP_SIZE];       //選択された親個体の要素番号（高�
 int max, min, sumfitness;       //適合度のmax,min,sum
 int n_min;                      //適合度のminの添字
 double P_CROSS=0.5;             //一様交叉率
-int Edur[14] = {1, 3, 4, 6, 8, 9, 11, 13, 15, 16, 18, 20, 21, 23}; //Edurの音リスト
 static unsigned long int next=1;    //擬似乱数
 
 //担当：芳賀あかり
@@ -279,28 +278,27 @@ int ScoreHz(int sound1, int sound2, int sound3){
 // 短い音が一番多いか（最大3を返す）
 int ScoreRhythm(int i){
     int j;
-    int tail=32-1; // 最後尾のindex
-    int sum=0; //root音が連続した回数
-    int sum_all=0;　//3つ全ての音が連続した回数
-    int convergent=0; //収束するか (最初と最後の音が一致すれば加点)
+    int sum=0;
     int n_eighth=0, n_quarter=0, n_half=0, n_whole=0; //４分音符，２分音符，全音符の個数
-
-    for(j=0;j<(LEN_CHROM/3)-1;j++){
-        if (chrom[i][j] == chrom[i][j+1]){
-            sum++;
-            if (chrom[i][j+32] != chrom[i][j+32+1] && chrom[i][j+]64 != chrom[i][j+64+1]) sum_all++;
-            else if (chrom[i][j+32] != chrom[i][j+64+1] && chrom[i][j+64] != chrom[i][j+32+1]) sum_all++;
-        }
+    int score=0;
+    // for(j=1;j<LEN_CHROM/3;j++){
+    //     if (chrom[i][j-1] == chrom[i][j]) sum++;
+    //     else {
+    //         if(sum > 8) return 0;
+    //         sum = 0;
+    //     }
+    // }
+    for(j=0;j<LEN_CHROM/3;j++){
+        if (chrom[i][j] == chrom[i][j+1]) sum++;
+        else if (chrom[i][j] == chrom[i][j+32+1]) sum++;
+        else if (chrom[i][j] == chrom[i][j+64+1]) sum++;
+        else if (chrom[i][j+32] == chrom[i][j+1]) sum++;
+        else if (chrom[i][j+32] == chrom[i][j+32+1]) sum++;
+        else if (chrom[i][j+32] == chrom[i][j+64+1]) sum++;
+        else if (chrom[i][j+64] == chrom[i][j+1]) sum++;
+        else if (chrom[i][j+64] == chrom[i][j+32+1]) sum++;
+        else if (chrom[i][j+64] == chrom[i][j+64+1]) sum++;
         else {
-            // 最後ならさらに加点
-            if(j=tail){
-                if(sum == 1) n_eighth += 2;
-                else if(sum == 2) n_quarter += 2;
-                else if(sum == 4) n_half += 2;
-                else if(sum == 8) n_whole += 2;
-                sum = 0;
-                continue;
-            }
             if(sum == 1) n_eighth += 1;
             else if(sum == 2) n_quarter += 1;
             else if(sum == 4) n_half += 1;
@@ -308,33 +306,24 @@ int ScoreRhythm(int i){
             sum = 0;
         }
     }
-    // 最初と最後の音が同じならさらに加点
-    if (chrom[i][j] == chrom[i][tail]){
-        convergent++;
-        if (chrom[i][32] != chrom[i][tail+32] && chrom[i][64] != chrom[i][tail+64]) convergent++;
-        else if (chrom[i][32] != chrom[i][tail+64] && chrom[i][64] != chrom[i][tail+32]) convergent++;
-    }
 
-    return (
-        (n_quarter*2) + 
-        (n_half*3) + 
-        (n_whole*4) + 
-        sum_all + 
-        convergent
-    );
+    return n_eighth + (n_quarter*2) + (n_half*3) + (n_whole*4);
 }
 
 //担当：芳賀あかり
 //協和音なら1を返す
-int ScoreChord(int root, int sound1, int sound2){
-    int diff1, diff2;
-    //root音 からの差をそれぞれ見る
-    diff1 = abs(root - sound1);
-    diff2 = abs(root - sound2);
-    if((diff1 != 4) && (diff1 != 5) && (diff1 != 7) && (diff1 != 12)) return 0;
-    if((diff2 != 4) && (diff2 != 5) && (diff2 != 7) && (diff2 != 12)) return 0;
+int ScoreChord(int sound1, int sound2, int sound3){
+    int diff12, diff23, diff31;
+    diff12 = abs(sound1 - sound2);
+    diff23 = abs(sound2 - sound3);
+    diff31 = abs(sound3 - sound1);
+    if((diff12 == 4) || (diff12 == 5) || (diff12 == 7) || (diff12 == 12)){ //長3度, 完全4度, 完全5度, オクターブ
+        if((diff23 == 4) || (diff23 == 5) || (diff23 == 7) || (diff12 == 12)){
+            if((diff31 == 4) || (diff31 == 5) || (diff31 == 7) || (diff12 == 12)) return 1;
+        }
+    } 
 
-    return 1;
+    return 0;
 }
 
 //担当：芳賀あかり
@@ -359,72 +348,75 @@ int BinarySearch(int a[], int target, int ARRAY_SIZE){
 
 //担当：芳賀あかり
 //Edurの音があれば+1（最大 3を返す）
-int ScoreEdur(int sound){
+int ScoreEdur(int sound1, int sound2, int sound3){
     int ARRAY_SIZE = 14;
+    int Edur[14] = {1, 3, 4, 6, 8, 9, 11, 13, 15, 16, 18, 20, 21, 23};
     int score = 0;
-    score += BinarySearch(Edur, sound, ARRAY_SIZE);
+    score += BinarySearch(Edur, sound1, ARRAY_SIZE);
+    score += BinarySearch(Edur, sound2, ARRAY_SIZE);
+    score += BinarySearch(Edur, sound3, ARRAY_SIZE);
 
     return score;
 }
 
 //担当：芳賀あかり
-//音の跳躍が閾値以下の幅なら1を返す
-int ScoreInterval(int sound1, int sound2){
-    if(abs(sound1-sound2) < 8) return 1;
-    return 0;
-}
-
-//担当：芳賀あかり
 // 単音 > 二和音 > 3和音の順で音多いと加点する
-int ScoreNChord(int sound1, int sound2){
+int ScoreNChord(int sound1, int sound2, int sound3){
+
     int sum=0;
     int score;
     if(sound1==0) sum++;
     if(sound2==0) sum++;
+    if(sound3==0) sum++;
     if (sum == 0) score = 0;
     if (sum == 1) score = 1;
     if (sum == 2) score = 2;
+    if (sum == 3) score = 0;
+
     return score;
 }
 
 //担当：芳賀あかり
 // 目的関数
 int ObjFunc(int i){
-    int j, root, sound1, sound2;
+    int j, sound1, sound2, sound3;
     int score_hz=0;         // 0~32
     int score_rhythm=0;     // 0~32
     int score_chord=0;      // 0~32
     int score_interval=0;   // 0~32
-    int score_dur=0;        // 0~32
+    int score_dur=0;
     int score_n_chord=0;    // 0~32
 
     for(j=0;j<LEN_CHROM/3;j++){
-        root = chrom[i][j];
-        sound1 = chrom[i][j+32];
-        sound2 = chrom[i][j+64];
-
+        sound1 = chrom[i][j];
+        sound2 = chrom[i][j+32];
+        sound3 = chrom[i][j+64];
         // 癒し周波数かどうか：真ん中のド(音番号 12)に近ければ加点
-        score_hz += ScoreHz(root, sound1, sound2);
+        score_hz += ScoreHz(sound1, sound2, sound3);
 
         // 不協和音が無ければ+1
-        score_chord += ScoreChord(root, sound1, sound2);
+        score_chord += ScoreChord(sound1, sound2, sound3);
 
         // 飛躍が少ないか
         if(j!=0){
-            // root音のみ見る
-            score_interval += ScoreInterval(chrom[i][j], chrom[i][j-1]); 
+            if(abs(chrom[i][j]-chrom[i][j-1]) < 8) score_interval += 1;
         }
         
         // 単音が一番多いか
-        // root音は見ない．
-        score_n_chord += ScoreNChord(sound1, sound2);
+        score_n_chord += ScoreNChord(sound1, sound2, sound3);
 
         // 同じ調を使っているか（Ebで固定）
-        // score_dur += ScoreEdur(root);
+        // score_dur += ScoreEdur(sound1, sound2, sound3);
     }
+            /*
+        chrom[i][j]をroot音にして，他は和音として考える．
+        和音はrootからどのくらいはなれているか見ればいい（必然的に調が同じ音が使われる）
+        跳躍はrootだけ見れば良い
 
-    // 長い音があれば加点（リズム）
-    score_rhythm = ScoreRhythm(i)*32;
+        root音が関係ないもの（周波数）はそのままで良い
+        */
+    // 短い音が一番多いか（リズム）
+    // score_rhythm = ScoreRhythm(i)*32;
 
     return score_hz + (score_rhythm*2) + score_chord + score_interval + score_dur + score_n_chord;
 }
