@@ -78,7 +78,6 @@ int Num2Cdur[25] = {
     17, //
     18, //
     20, //
-    0,
     1, //
     3, //
     5, //
@@ -89,7 +88,8 @@ int Num2Cdur[25] = {
     13, //
     15, //
     17,
-    18
+    18,
+    20
 };
 
 //担当：息優奈
@@ -300,28 +300,27 @@ int ScoreRhythm(int i){
     int convergent=0; //収束するか (最初と最後の音が一致すれば加点)
     int n_eighth=0, n_quarter=0, n_half=0, n_whole=0; //４分音符，２分音符，全音符の個数
 
-    for(j=0;j<(LEN_CHROM/3)-1;j++){
-        if (chrom[i][j] == chrom[i][j+1]){
+    for(j=1;j<(LEN_CHROM/3);j++){
+        if (chrom[i][j] == chrom[i][j-1]){
             sum++;
-            if (chrom[i][j+16] != chrom[i][j+16+1] && chrom[i][j+32] != chrom[i][j+32+1]) sum_all++;
-            else if (chrom[i][j+16] != chrom[i][j+32+1] && chrom[i][j+32] != chrom[i][j+16+1]) sum_all++;
+            if (chrom[i][j+16] != chrom[i][j+16-1] && chrom[i][j+32] != chrom[i][j+32-1]) sum_all++;
+            else if (chrom[i][j+16] != chrom[i][j+32-1] && chrom[i][j+32] != chrom[i][j+16-1]) sum_all++;
         }
         else {
             // 最後ならさらに加点
-            if(j==tail){
-                if(sum == 1) n_eighth += 2;
-                else if(sum == 2) n_quarter += 2;
-                else if(sum == 4) n_half += 2;
-                else if(sum == 8) n_whole += 2;
-                sum = 0;
-                continue;
-            }
             if(sum == 1) n_eighth += 1;
             else if(sum == 2) n_quarter += 1;
             else if(sum == 4) n_half += 1;
             else if(sum == 8) n_whole += 1;
             sum = 0;
-        }
+        }    
+    }
+    if(sum != 0){
+        printf("==========yheeeeeeeeeeeeeeeee===================\n");
+        if(sum == 1) n_eighth += 2;
+        else if(sum == 2) n_quarter += 2;
+        else if(sum == 4) n_half += 2;
+        else if(sum == 8) n_whole += 2;
     }
     // 最初と最後の音が同じならさらに加点
     if (chrom[i][j] == chrom[i][tail]){
@@ -343,13 +342,13 @@ int ScoreRhythm(int i){
 int ScoreChord(int root, int sound1, int sound2){
     int diff1, diff2;
     //root音 からの差をそれぞれ見る
-    diff1 = abs(root - sound1);
-    diff2 = abs(root - sound2);
+    diff1 = sound1 - root;
+    diff2 = sound2 - root;
     if(sound1 != 0){
-        if((diff1 != 4) && (diff1 != 5) && (diff1 != 7) && (diff1 != 12)) return 0;
+        if((diff1 != -8) && (diff1 != -5) && (diff1 != 4) && (diff1 != 7) && (diff1 != 12)) return 0;
     }
     if(sound2 != 0){
-        if((diff2 != 4) && (diff2 != 5) && (diff2 != 7) && (diff2 != 12)) return 0;
+        if((diff1 != -8) && (diff2 != -5) && (diff2 != 4) && (diff2 != 7) && (diff2 != 12)) return 0;
     }
     return 1;
 }
@@ -400,7 +399,7 @@ int ScoreNChord(int sound1, int sound2){
     if(sound2==0) sum++;
     if (sum == 0) score = 0;
     if (sum == 1) score = 1;
-    if (sum == 2) score = 2;
+    if (sum == 2) score = 1;
     return score;
 }
 
@@ -460,13 +459,27 @@ int ObjFunc(int i){
 //担当：芳賀あかり
 //初期化
 void Initialize(){
-    int i, j;
+    int i, j, k, len, scale1, scale2, scale3;
+    // 長さ3以下の音で初期化
+    len = rand()%3 + 1; //1~3の数字
     for(i=0;i<POP_SIZE;i++){
-        for(j=0;j<LEN_CHROM;j++){
-            chrom[i][j]=rand()%LEN_SOUND;
-            chrom[i][j]=Num2Cdur[chrom[i][j]];
+        j=0;
+        while(j<LEN_CHROM/3){
+            scale1 = rand()%(LEN_SOUND-1)+1; //1~25の数字
+            scale1 = Num2Cdur[scale1];
+            scale2 = rand()%LEN_SOUND;
+            scale2 = Num2Cdur[scale2];
+            scale3 = rand()%LEN_SOUND;
+            scale3 = Num2Cdur[scale3];
+            for(k=0;k<len;k++){
+                chrom[i][j+k]=scale1;
+                chrom[i][j+16+k]=scale2;
+                chrom[i][j+32+k]=scale3;
+            }
+            j+=len;
+            len = rand()%3 + 1; //1~3の数字
+            
         }
-        fitness[i]=ObjFunc(i);
     }
 
     printf("First Population\n");
