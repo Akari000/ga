@@ -407,7 +407,7 @@ int ObjFunc(int i){
         sound2 = chrom[i][j+64];
 
         // 癒し周波数かどうか：真ん中のド(音番号 12)に近ければ加点
-        score_hz += ScoreHz(root, sound1, sound2);
+        // score_hz += ScoreHz(root, sound1, sound2);
 
         // 不協和音が無ければ+1
         score_chord += ScoreChord(root, sound1, sound2);
@@ -423,7 +423,7 @@ int ObjFunc(int i){
         score_n_chord += ScoreNChord(sound1, sound2);
 
         // 同じ調を使っているか（Ebで固定）
-        // score_dur += ScoreEdur(root);
+        score_dur += ScoreEdur(root);
     }
 
     // 長い音があれば加点（リズム）
@@ -439,7 +439,7 @@ void Initialize(){
     for(i=0;i<POP_SIZE;i++){
         for(j=0;j<LEN_CHROM;j++){
             chrom[i][j]=rand()%LEN_SOUND;
-            chrom[i][j]=Num2Cdur[chrom[i][j]];
+            // chrom[i][j]=Num2Cdur[chrom[i][j]];
         }
         fitness[i]=ObjFunc(i);
     }
@@ -530,7 +530,8 @@ void Mutation(int child){
             if(scale > 24)  //もしNum2Cdurの要素数を超える数値になったら0にする
                 scale = 0;
         }
-        chrom[child][n_mutate] = Num2Cdur[scale];
+        // chrom[child][n_mutate] = Num2Cdur[scale];
+        chrom[child][n_mutate] = scale;
         fitness[child] = ObjFunc(child);
         PrintMutation(AFTER, child, n_mutate);
     }
@@ -573,9 +574,11 @@ void Generation(int gen){
           child1 = sort_chrom[n_delete];        //適応度が7～12番目の個体を新しい子供で置き換えていく
           child2 = sort_chrom[n_delete+1];      //上記に同じ
           Crossover(parent1, parent2, child1, child2);
-          Mutation(child1);
-          Mutation(child2);
-
+          if(P_CROSS > 0.01){
+            Mutation(child1);
+            Mutation(child2);
+          }
+          
           n_delete = n_delete + 2;
        }
     }
