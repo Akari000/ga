@@ -11,7 +11,7 @@
 #include <time.h>
 #include <string.h>
 
-#define MAX_GEN      20  //最大世代交替
+#define MAX_GEN      30  //最大世代交替
 #define POP_SIZE     12  //集団のサイズ
 #define LEN_CHROM    32*3//一個体の遺伝子の長さ
 #define LEN_SOUND    24+1 //音数(無音は0)
@@ -105,7 +105,7 @@ void PrintEachChromFitness(int i, char *label){
     int j;
     FILE *fp;
     
-    fp = fopen("result_file.txt", "a");
+    fp = fopen("../_data/result_file.txt", "a");
     FileOpenError(fp);
     
     printf("個体%d : %d\n", i, fitness[i]);
@@ -126,7 +126,7 @@ void PrintEachChromFitness(int i, char *label){
     fclose(fp);
 
     //ファイルへの書き込み（play sound 用）
-    fp = fopen("sounds.txt", "a");
+    fp = fopen("../_data/sounds.txt", "a");
     FileOpenError(fp);
 
     for(j=0; j<LEN_CHROM/3; j++){
@@ -154,7 +154,7 @@ void PrintStatistics(int gen){
     double ave;
     FILE *fp;
     
-    fp = fopen("result_file.txt", "a");
+    fp = fopen("../_data/result_file.txt", "a");
     FileOpenError(fp);
     
     ave = (double)sumfitness/(double)POP_SIZE;
@@ -164,7 +164,7 @@ void PrintStatistics(int gen){
     fprintf(fp, "[gen=%2d] max=%d min=%d sumfitness=%d ave=%f\n", gen, max, min, sumfitness, ave);
     fclose(fp);
 
-    fp = fopen("average.txt", "a");
+    fp = fopen("../_data/average.txt", "a");
     FileOpenError(fp);
     fprintf(fp, "%f\n", ave);
     fclose(fp);
@@ -176,7 +176,7 @@ void PrintCrossover(int flag, int parent1, int parent2, int child1, int child2, 
     int i;
     FILE *fp;
     
-    fp = fopen("result_file.txt", "a");
+    fp = fopen("../_data/result_file.txt", "a");
     FileOpenError(fp);
     
     switch(flag){
@@ -230,7 +230,7 @@ void PrintCrossover(int flag, int parent1, int parent2, int child1, int child2, 
 void PrintMutation(int flag, int child, int n_mutate){
     FILE *fp;
     
-    fp = fopen("result_file.txt", "a");
+    fp = fopen("../_data/result_file.txt", "a");
     FileOpenError(fp);
     
     switch(flag){
@@ -281,19 +281,19 @@ int ScoreRhythm(int i){
     int j;
     int tail=32-1; // 最後尾のindex
     int sum=0; //root音が連続した回数
-    int sum_all=0;　//3つ全ての音が連続した回数
+    int sum_all=0; //3つ全ての音が連続した回数
     int convergent=0; //収束するか (最初と最後の音が一致すれば加点)
     int n_eighth=0, n_quarter=0, n_half=0, n_whole=0; //４分音符，２分音符，全音符の個数
 
     for(j=0;j<(LEN_CHROM/3)-1;j++){
         if (chrom[i][j] == chrom[i][j+1]){
             sum++;
-            if (chrom[i][j+32] != chrom[i][j+32+1] && chrom[i][j+]64 != chrom[i][j+64+1]) sum_all++;
+            if (chrom[i][j+32] != chrom[i][j+32+1] && chrom[i][j+64] != chrom[i][j+64+1]) sum_all++;
             else if (chrom[i][j+32] != chrom[i][j+64+1] && chrom[i][j+64] != chrom[i][j+32+1]) sum_all++;
         }
         else {
             // 最後ならさらに加点
-            if(j=tail){
+            if(j==tail){
                 if(sum == 1) n_eighth += 2;
                 else if(sum == 2) n_quarter += 2;
                 else if(sum == 4) n_half += 2;
@@ -316,11 +316,11 @@ int ScoreRhythm(int i){
     }
 
     return (
-        (n_quarter*2) + 
-        (n_half*3) + 
-        (n_whole*4) + 
-        sum_all + 
-        convergent
+        (n_quarter) + 
+        (n_half*5) + 
+        (n_whole) + 
+        sum_all*5 + 
+        convergent*5
     );
 }
 
@@ -331,9 +331,12 @@ int ScoreChord(int root, int sound1, int sound2){
     //root音 からの差をそれぞれ見る
     diff1 = abs(root - sound1);
     diff2 = abs(root - sound2);
-    if((diff1 != 4) && (diff1 != 5) && (diff1 != 7) && (diff1 != 12)) return 0;
-    if((diff2 != 4) && (diff2 != 5) && (diff2 != 7) && (diff2 != 12)) return 0;
-
+    if(sound1 != 0){
+        if((diff1 != 4) && (diff1 != 5) && (diff1 != 7) && (diff1 != 12)) return 0;
+    }
+    if(sound2 != 0){
+        if((diff2 != 4) && (diff2 != 5) && (diff2 != 7) && (diff2 != 12)) return 0;
+    }
     return 1;
 }
 
@@ -576,11 +579,12 @@ void Generation(int gen){
           n_delete = n_delete + 2;
        }
     }
+    // 同じ音があれば片方を無音にする
     for(i=0; i<POP_SIZE; i++){ 
        for(j=0; j<LEN_CHROM/3; j++){
-           if (chrom[i][j] == chrom[i][j+32]) chrom[i][j] = 0;
-           if (chrom[i][j] == chrom[i][j+64]) chrom[i][j] = 0;
-           if (chrom[i][j+32] == chrom[i][j+64]) chrom[i][j+32] = 0;
+           if (chrom[i][j] == chrom[i][j+32]) chrom[i][j+32] = 0;
+           if (chrom[i][j] == chrom[i][j+64]) chrom[i][j+64] = 0;
+           if (chrom[i][j+32] == chrom[i][j+64]) chrom[i][j+64] = 0;
        }
     }
     P_CROSS = P_CROSS * exp((double)-gen/10.0);
@@ -594,15 +598,16 @@ int main(int argc, char**argv)
     int gen;
     FILE *fp;
 
-    fp = fopen("result_file.txt", "w");
+    //出力ファイルの初期化
+    fp = fopen("../_data/result_file.txt", "w");
     FileOpenError(fp);
     fclose(fp);
 
-    fp = fopen("average.txt", "w");
+    fp = fopen("../_data/average.txt", "w");
     FileOpenError(fp);
     fclose(fp);
 
-    fp = fopen("sounds.txt", "w");
+    fp = fopen("../_data/sounds.txt", "w");
     FileOpenError(fp);
     fclose(fp);
 

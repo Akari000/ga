@@ -50,7 +50,11 @@ stream = p.open(format=pyaudio.paFloat32,
                 frames_per_buffer=1024,
                 output=True)
 
-with open('sounds.txt') as f:
+print('type filename "default" or custom')
+filename = input()
+if filename == 'default':
+    filename = '../_data/sounds.txt'
+with open(filename) as f:
     lines = f.readlines()
     for line in lines:
         play(
