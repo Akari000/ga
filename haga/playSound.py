@@ -58,7 +58,7 @@ with open('sounds.txt') as f:
             Num2Hz[int(re.findall('(\d+) (\d+) (\d+)', line)[0][0])],
             Num2Hz[int(re.findall('(\d+) (\d+) (\d+)', line)[0][1])],
             Num2Hz[int(re.findall('(\d+) (\d+) (\d+)', line)[0][2])],
-            0.7)
+            0.5)
 
 # ストリームを閉じる
 stream.close()
