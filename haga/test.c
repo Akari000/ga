@@ -99,6 +99,25 @@ void FileOpenError(FILE *fp){
     }
 }
 
+//担当：息優奈・芳賀あかり
+//play sound用のファイル書き込み
+void PrintSoundFile(){
+    int j;
+    FILE *fp;
+
+    fp = fopen("sounds.txt", "a");
+    FileOpenError(fp);
+
+    for(j=0; j<LEN_CHROM/3; j++){
+        fprintf(fp, "%d %d %d\n", chrom[0][j], chrom[0][j+32], chrom[0][j+64]);
+    }
+    fprintf(fp, "0 0 0\n");
+    fprintf(fp, "0 0 0\n");
+    fprintf(fp, "0 0 0\n");
+    fprintf(fp, "0 0 0\n");
+    fclose(fp);
+}
+
 //担当：息優奈、play soud用ファイル出力追加：芳賀あかり
 //引数iに対応する個体の遺伝子情報と適合度を表示
 void PrintEachChromFitness(int i, char *label){
@@ -123,19 +142,6 @@ void PrintEachChromFitness(int i, char *label){
         fprintf(fp, "%s\t", Num2Sound[chrom[i][j]]);
     }
     fprintf(fp, "\n");
-    fclose(fp);
-
-    //ファイルへの書き込み（play sound 用）
-    fp = fopen("../_data/sounds.txt", "a");
-    FileOpenError(fp);
-
-    for(j=0; j<LEN_CHROM/3; j++){
-        fprintf(fp, "%d %d %d\n", chrom[i][j], chrom[i][j+32], chrom[i][j+64]);
-    }
-    fprintf(fp, "0 0 0\n");
-    fprintf(fp, "0 0 0\n");
-    fprintf(fp, "0 0 0\n");
-    fprintf(fp, "0 0 0\n");
     fclose(fp);
 }
 
@@ -447,6 +453,8 @@ void Initialize(){
     printf("First Population\n");
     PrintChromFitness();
     printf("------------------\n");
+    
+    fitness[i]=ObjFunc(i);
 }
 
 //担当：息優奈
@@ -592,6 +600,11 @@ void Generation(int gen){
     }
     P_CROSS = P_CROSS * exp((double)-gen/10.0);
     if(P_CROSS < 0.01)  P_CROSS = 0;     //交叉率が0.01を下回ったら交叉率を0に
+    
+    //最終的に生成された音をサウンド用ファイルに書き込む
+    if(gen == MAX_GEN){
+        PrintSoundFile();
+    }
 }
 
 //担当：息優奈・芳賀あかり
