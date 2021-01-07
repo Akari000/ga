@@ -11,9 +11,9 @@
 #include <time.h>
 #include <string.h>
 
-#define MAX_GEN      30  //最大世代交替
+#define MAX_GEN      15  //最大世代交替
 #define POP_SIZE     12  //集団のサイズ
-#define LEN_CHROM    32*3//一個体の遺伝子の長さ
+#define LEN_CHROM    16*3//一個体の遺伝子の長さ
 #define LEN_SOUND    24+1 //音数(無音は0)
 #define GEN_GAP      0.2 //世代交替の割合
 // #define P_CROSS      0.5 //一様交叉率
@@ -111,7 +111,7 @@ void PrintSoundFile(){
     FileOpenError(fp);
 
     for(j=0; j<LEN_CHROM/3; j++){
-        fprintf(fp, "%d %d %d\n", chrom[0][j], chrom[0][j+32], chrom[0][j+64]);
+        fprintf(fp, "%d %d %d\n", chrom[0][j], chrom[0][j+16], chrom[0][j+32]);
     }
     fprintf(fp, "0 0 0\n");
     fprintf(fp, "0 0 0\n");
@@ -131,7 +131,7 @@ void PrintEachChromFitness(int i, char *label){
     
     printf("個体%d : %d\n", i, fitness[i]);
     for(j=0; j<LEN_CHROM; j++){
-        if((j%32 == 0) && (j != 0))  printf("\n");  //セルが32個毎に改行
+        if((j%16 == 0) && (j != 0))  printf("\n");  //セルが16個毎に改行
         printf("%s\t", Num2Sound[chrom[i][j]]);
     }
     printf("\n");
@@ -140,7 +140,7 @@ void PrintEachChromFitness(int i, char *label){
     fprintf(fp, "%s", label);
     fprintf(fp, "個体%d : %d\n", i, fitness[i]);
     for(j=0; j<LEN_CHROM; j++){
-        if((j%32 == 0) && (j != 0))  fprintf(fp, "\n");
+        if((j%16 == 0) && (j != 0))  fprintf(fp, "\n");
         fprintf(fp, "%s\t", Num2Sound[chrom[i][j]]);
     }
     fprintf(fp, "\n");
@@ -206,14 +206,14 @@ void PrintCrossover(int flag, int parent1, int parent2, int child1, int child2, 
             //交叉位置を表示
             printf("交叉率：%lf，交叉位置:\n", P_CROSS);
             for(i=0; i<LEN_CHROM; i++){
-                if((i%32 == 0) && (i != 0))  printf("\n");  //セルが32個毎に改行
+                if((i%16 == 0) && (i != 0))  printf("\n");  //セルが16個毎に改行
                 printf("%2d ", n_cross[i]);
             }
             
             //ファイルへの書き込み
             fprintf(fp, "交叉率：%lf，交叉位置:\n", P_CROSS);
             for(i=0; i<LEN_CHROM; i++){
-                if((i%32 == 0) && (i != 0))  fprintf(fp, "\n");
+                if((i%16 == 0) && (i != 0))  fprintf(fp, "\n");
                 fprintf(fp, "%2d ", n_cross[i]);
             }            
 
@@ -260,7 +260,7 @@ void PrintMutation(int flag, int child, int n_mutate){
             printf("<child(OLD)> ");
             // fprintf(fp, "<child(OLD)> ");   //ファイルへの書き込み
             PrintEachChromFitness(child, "<child(OLD)> ");
-            printf("n_mutate=%d %d %d\n", n_mutate, n_mutate+32, n_mutate+64);  //突然変異位置の表示
+            printf("n_mutate=%d %d %d\n", n_mutate, n_mutate+16, n_mutate+32);  //突然変異位置の表示
             fprintf(fp, "n_mutate=%d\n", n_mutate); //ファイルへの書き込み
             break;
     }
@@ -294,7 +294,7 @@ int ScoreHz(int sound1, int sound2, int sound3){
 // 短い音が一番多いか（最大3を返す）
 int ScoreRhythm(int i){
     int j;
-    int tail=32-1; // 最後尾のindex
+    int tail=16-1; // 最後尾のindex
     int sum=0; //root音が連続した回数
     int sum_all=0; //3つ全ての音が連続した回数
     int convergent=0; //収束するか (最初と最後の音が一致すれば加点)
@@ -303,8 +303,8 @@ int ScoreRhythm(int i){
     for(j=0;j<(LEN_CHROM/3)-1;j++){
         if (chrom[i][j] == chrom[i][j+1]){
             sum++;
-            if (chrom[i][j+32] != chrom[i][j+32+1] && chrom[i][j+64] != chrom[i][j+64+1]) sum_all++;
-            else if (chrom[i][j+32] != chrom[i][j+64+1] && chrom[i][j+64] != chrom[i][j+32+1]) sum_all++;
+            if (chrom[i][j+16] != chrom[i][j+16+1] && chrom[i][j+32] != chrom[i][j+32+1]) sum_all++;
+            else if (chrom[i][j+16] != chrom[i][j+32+1] && chrom[i][j+32] != chrom[i][j+16+1]) sum_all++;
         }
         else {
             // 最後ならさらに加点
@@ -326,8 +326,8 @@ int ScoreRhythm(int i){
     // 最初と最後の音が同じならさらに加点
     if (chrom[i][j] == chrom[i][tail]){
         convergent++;
-        if (chrom[i][32] != chrom[i][tail+32] && chrom[i][64] != chrom[i][tail+64]) convergent++;
-        else if (chrom[i][32] != chrom[i][tail+64] && chrom[i][64] != chrom[i][tail+32]) convergent++;
+        if (chrom[i][16] != chrom[i][tail+16] && chrom[i][32] != chrom[i][tail+32]) convergent++;
+        else if (chrom[i][16] != chrom[i][tail+32] && chrom[i][32] != chrom[i][tail+16]) convergent++;
     }
 
     return (
@@ -408,17 +408,17 @@ int ScoreNChord(int sound1, int sound2){
 // 目的関数
 int ObjFunc(int i){
     int j, root, sound1, sound2;
-    int score_hz=0;         // 0~32
-    int score_rhythm=0;     // 0~32
-    int score_chord=0;      // 0~32
-    int score_interval=0;   // 0~32
-    int score_dur=0;        // 0~32
-    int score_n_chord=0;    // 0~32
+    int score_hz=0;         // 0~16
+    int score_rhythm=0;     // 0~16
+    int score_chord=0;      // 0~16
+    int score_interval=0;   // 0~16
+    int score_dur=0;        // 0~16
+    int score_n_chord=0;    // 0~16
 
     for(j=0;j<LEN_CHROM/3;j++){
         root = chrom[i][j];
-        sound1 = chrom[i][j+32];
-        sound2 = chrom[i][j+64];
+        sound1 = chrom[i][j+16];
+        sound2 = chrom[i][j+32];
 
         // 癒し周波数かどうか：真ん中のド(音番号 12)に近ければ加点
         // score_hz += ScoreHz(root, sound1, sound2);
@@ -430,14 +430,14 @@ int ObjFunc(int i){
         if(j!=0){
             // root音のみ見る
             score_interval += ScoreInterval(chrom[i][j], chrom[i][j-1]);
+            score_interval += ScoreInterval(chrom[i][j+16], chrom[i][j-1]);
             score_interval += ScoreInterval(chrom[i][j+32], chrom[i][j-1]);
-            score_interval += ScoreInterval(chrom[i][j+64], chrom[i][j-1]);
+            score_interval += ScoreInterval(chrom[i][j], chrom[i][j+16-1]);
+            score_interval += ScoreInterval(chrom[i][j+16], chrom[i][j+16-1]);
+            score_interval += ScoreInterval(chrom[i][j+32], chrom[i][j+16-1]);
             score_interval += ScoreInterval(chrom[i][j], chrom[i][j+32-1]);
+            score_interval += ScoreInterval(chrom[i][j+16], chrom[i][j+32-1]);
             score_interval += ScoreInterval(chrom[i][j+32], chrom[i][j+32-1]);
-            score_interval += ScoreInterval(chrom[i][j+64], chrom[i][j+32-1]);
-            score_interval += ScoreInterval(chrom[i][j], chrom[i][j+64-1]);
-            score_interval += ScoreInterval(chrom[i][j+32], chrom[i][j+64-1]);
-            score_interval += ScoreInterval(chrom[i][j+64], chrom[i][j+64-1]);
             
         }
         
@@ -450,7 +450,7 @@ int ObjFunc(int i){
     }
 
     // 長い音があれば加点（リズム）
-    score_rhythm = ScoreRhythm(i)*32;
+    score_rhythm = ScoreRhythm(i)*16;
     printf("====================objfunc======================\n");
     printf("score_hz: %d, score_rhythm: %d, score_chord*30: %d, score_interval*3: %d, score_n_chord*20: %d\n", 
             score_hz, score_rhythm, score_chord*25, score_interval*2, score_n_chord*10);
@@ -578,8 +578,8 @@ void Mutation(int child){
     //     PrintMutation(BEFORE_MUTATION2, child, n_mutate);
     //     if (n_mutate == 0 ) n_mutate =1;
     //     chrom[child][n_mutate] = chrom[child][n_mutate-1];
+    //     chrom[child][n_mutate+16] = chrom[child][n_mutate+16-1];
     //     chrom[child][n_mutate+32] = chrom[child][n_mutate+32-1];
-    //     chrom[child][n_mutate+64] = chrom[child][n_mutate+64-1];
 
     //     fitness[child] = ObjFunc(child);
     //     PrintMutation(AFTER, child, n_mutate);
@@ -634,9 +634,9 @@ void Generation(int gen){
     // 同じ音があれば片方を無音にする
     for(i=0; i<POP_SIZE; i++){ 
        for(j=0; j<LEN_CHROM/3; j++){
+           if (chrom[i][j] == chrom[i][j+16]) chrom[i][j+16] = 0;
            if (chrom[i][j] == chrom[i][j+32]) chrom[i][j+32] = 0;
-           if (chrom[i][j] == chrom[i][j+64]) chrom[i][j+64] = 0;
-           if (chrom[i][j+32] == chrom[i][j+64]) chrom[i][j+64] = 0;
+           if (chrom[i][j+16] == chrom[i][j+32]) chrom[i][j+32] = 0;
        }
     }
     P_CROSS = P_CROSS * exp((double)-gen/10.0);
