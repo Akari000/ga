@@ -56,13 +56,25 @@ if filename == 'default':
     filename = '../_data/sounds.txt'
 with open(filename) as f:
     lines = f.readlines()
+    old_sound1 = 0
+    old_sound2 = 0
+    old_sound3 = 0
+
     for line in lines:
-        play(
-            stream,
-            Num2Hz[int(re.findall('(\d+) (\d+) (\d+)', line)[0][0])],
-            Num2Hz[int(re.findall('(\d+) (\d+) (\d+)', line)[0][1])],
-            Num2Hz[int(re.findall('(\d+) (\d+) (\d+)', line)[0][2])],
-            0.5)
+        sound1 = int(re.findall('(\d+) (\d+) (\d+)', line)[0][0])
+        sound2 = int(re.findall('(\d+) (\d+) (\d+)', line)[0][1])
+        sound3 = int(re.findall('(\d+) (\d+) (\d+)', line)[0][2])
+        if sound1 == old_sound1 and sound2 == old_sound2 and sound3 == old_sound3:
+            play(stream, Num2Hz[sound1], Num2Hz[sound2], Num2Hz[sound3], 0.14)
+            old_sound1 = sound1
+            old_sound2 = sound2
+            old_sound3 = sound3
+            continue
+
+        play(stream, Num2Hz[sound1], Num2Hz[sound2], Num2Hz[sound3], 0.7)
+        old_sound1 = sound1
+        old_sound2 = sound2
+        old_sound3 = sound3
 
 # ストリームを閉じる
 stream.close()

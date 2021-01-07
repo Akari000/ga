@@ -30,6 +30,7 @@ int max, min, sumfitness;       //適合度のmax,min,sum
 int n_min;                      //適合度のminの添字
 double P_CROSS=0.5;             //一様交叉率
 int Edur[14] = {1, 3, 4, 6, 8, 9, 11, 13, 15, 16, 18, 20, 21, 23}; //Edurの音リスト
+int Cdur[14] = {1, 3, 4, 6, 8, 10, 12, 13, 15, 17, 18, 20, 22, 24}; //Edurの音リスト
 static unsigned long int next=1;    //擬似乱数
 
 //担当：芳賀あかり
@@ -105,7 +106,7 @@ void PrintEachChromFitness(int i, char *label){
     int j;
     FILE *fp;
     
-    fp = fopen("../_data/result_file.txt", "a");
+    fp = fopen("../_data/result_file.txt", "w");
     FileOpenError(fp);
     
     printf("個体%d : %d\n", i, fitness[i]);
@@ -316,11 +317,10 @@ int ScoreRhythm(int i){
     }
 
     return (
-        (n_quarter) + 
-        (n_half*5) + 
-        (n_whole) + 
-        sum_all*5 + 
-        convergent*5
+        (n_quarter) +
+        (n_half) +
+        sum_all +
+        convergent
     );
 }
 
@@ -365,7 +365,7 @@ int BinarySearch(int a[], int target, int ARRAY_SIZE){
 int ScoreEdur(int sound){
     int ARRAY_SIZE = 14;
     int score = 0;
-    score += BinarySearch(Edur, sound, ARRAY_SIZE);
+    score += BinarySearch(Cdur, sound, ARRAY_SIZE);
 
     return score;
 }
@@ -373,7 +373,7 @@ int ScoreEdur(int sound){
 //担当：芳賀あかり
 //音の跳躍が閾値以下の幅なら1を返す
 int ScoreInterval(int sound1, int sound2){
-    if(abs(sound1-sound2) < 8) return 1;
+    if((sound1-sound2) < 5) return 1;
     return 0;
 }
 
@@ -415,21 +415,32 @@ int ObjFunc(int i){
         // 飛躍が少ないか
         if(j!=0){
             // root音のみ見る
-            score_interval += ScoreInterval(chrom[i][j], chrom[i][j-1]); 
+            score_interval += ScoreInterval(chrom[i][j], chrom[i][j-1]);
+            score_interval += ScoreInterval(chrom[i][j+32], chrom[i][j-1]);
+            score_interval += ScoreInterval(chrom[i][j+64], chrom[i][j-1]);
+            score_interval += ScoreInterval(chrom[i][j], chrom[i][j+32-1]);
+            score_interval += ScoreInterval(chrom[i][j+32], chrom[i][j+32-1]);
+            score_interval += ScoreInterval(chrom[i][j+64], chrom[i][j+32-1]);
+            score_interval += ScoreInterval(chrom[i][j], chrom[i][j+64-1]);
+            score_interval += ScoreInterval(chrom[i][j+32], chrom[i][j+64-1]);
+            score_interval += ScoreInterval(chrom[i][j+64], chrom[i][j+64-1]);
+            
         }
         
         // 単音が一番多いか
         // root音は見ない．
         score_n_chord += ScoreNChord(sound1, sound2);
 
-        // 同じ調を使っているか（Ebで固定）
-        score_dur += ScoreEdur(root);
+        // 同じ調を使っているか（Cdurで固定）
+        // score_dur += ScoreEdur(root);
     }
 
     // 長い音があれば加点（リズム）
     score_rhythm = ScoreRhythm(i)*32;
-
-    return score_hz + (score_rhythm*2) + score_chord + score_interval + score_dur + score_n_chord;
+    printf("====================objfunc======================\n");
+    printf("score_hz: %d, score_rhythm: %d, score_chord*30: %d, score_interval*3: %d, score_n_chord*20: %d\n", 
+            score_hz, score_rhythm, score_chord*25, score_interval*2, score_n_chord*10);
+    return score_hz + score_rhythm + score_chord*25 + score_interval*2 + score_n_chord*10;
 }
 
 //担当：芳賀あかり
@@ -439,7 +450,7 @@ void Initialize(){
     for(i=0;i<POP_SIZE;i++){
         for(j=0;j<LEN_CHROM;j++){
             chrom[i][j]=rand()%LEN_SOUND;
-            // chrom[i][j]=Num2Cdur[chrom[i][j]];
+            chrom[i][j]=Num2Cdur[chrom[i][j]];
         }
         fitness[i]=ObjFunc(i);
     }
@@ -530,8 +541,7 @@ void Mutation(int child){
             if(scale > 24)  //もしNum2Cdurの要素数を超える数値になったら0にする
                 scale = 0;
         }
-        // chrom[child][n_mutate] = Num2Cdur[scale];
-        chrom[child][n_mutate] = scale;
+        chrom[child][n_mutate] = Num2Cdur[scale];
         fitness[child] = ObjFunc(child);
         PrintMutation(AFTER, child, n_mutate);
     }
