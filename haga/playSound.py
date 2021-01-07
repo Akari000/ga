@@ -65,7 +65,7 @@ with open(filename) as f:
         sound2 = int(re.findall('(\d+) (\d+) (\d+)', line)[0][1])
         sound3 = int(re.findall('(\d+) (\d+) (\d+)', line)[0][2])
         if sound1 == old_sound1 and sound2 == old_sound2 and sound3 == old_sound3:
-            play(stream, Num2Hz[sound1], Num2Hz[sound2], Num2Hz[sound3], 0.14)
+            play(stream, Num2Hz[sound1], Num2Hz[sound2], Num2Hz[sound3], 1.4)
             old_sound1 = sound1
             old_sound2 = sound2
             old_sound3 = sound3

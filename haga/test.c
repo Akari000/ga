@@ -22,6 +22,7 @@
 #define RANDOM_MAX   32767
 #define BEFORE       0
 #define AFTER        1
+#define BEFORE_MUTATION2    2
 
 char chrom[POP_SIZE][LEN_CHROM]; //染色体
 int fitness[POP_SIZE];          //適合度
@@ -77,8 +78,6 @@ int Num2Cdur[25] = {
     17, //
     18, //
     20, //
-    22, //
-    24, //
     0,
     1, //
     3, //
@@ -89,6 +88,8 @@ int Num2Cdur[25] = {
     12, //
     13, //
     15, //
+    17,
+    18
 };
 
 //担当：息優奈
@@ -106,7 +107,7 @@ void PrintSoundFile(){
     int j;
     FILE *fp;
 
-    fp = fopen("sounds.txt", "a");
+    fp = fopen("../_data/sounds.txt", "a");
     FileOpenError(fp);
 
     for(j=0; j<LEN_CHROM/3; j++){
@@ -125,7 +126,7 @@ void PrintEachChromFitness(int i, char *label){
     int j;
     FILE *fp;
     
-    fp = fopen("../_data/result_file.txt", "w");
+    fp = fopen("../_data/result_file.txt", "a");
     FileOpenError(fp);
     
     printf("個体%d : %d\n", i, fitness[i]);
@@ -254,6 +255,13 @@ void PrintMutation(int flag, int child, int n_mutate){
             PrintEachChromFitness(child, "<child(NEW)> ");
             printf("-----------------------------------------------------------------\n");
             fprintf(fp, "-----------------------------------------------------------------\n");
+            break;
+        case BEFORE_MUTATION2:
+            printf("<child(OLD)> ");
+            // fprintf(fp, "<child(OLD)> ");   //ファイルへの書き込み
+            PrintEachChromFitness(child, "<child(OLD)> ");
+            printf("n_mutate=%d %d %d\n", n_mutate, n_mutate+32, n_mutate+64);  //突然変異位置の表示
+            fprintf(fp, "n_mutate=%d\n", n_mutate); //ファイルへの書き込み
             break;
     }
     fclose(fp);
@@ -465,7 +473,7 @@ void Initialize(){
     PrintChromFitness();
     printf("------------------\n");
     
-    fitness[i]=ObjFunc(i);
+    PrintSoundFile();
 }
 
 //担当：息優奈
@@ -506,21 +514,27 @@ void Select(){
 //担当：息優奈
 //交叉
 void Crossover(int parent1, int parent2, int child1, int child2){
-    int i;
+    int i, j, random;
     int n_cross[LEN_CHROM] = {0};   //交叉位置を格納
     
     //交叉
     PrintCrossover(BEFORE, parent1, parent2, child1, child2, n_cross);
-    
-    for(i=0; i<LEN_CHROM; i++){
+    random = rand()%4;
+    for(i=0; i<LEN_CHROM; i+=random){
         if((double)rand()/RAND_MAX < P_CROSS){  //確率0.5で交叉
-            chrom[child1][i] = chrom[parent2][i];
-            chrom[child2][i] = chrom[parent1][i];
-            n_cross[i] = 1; //交叉した位置を格納
+            for(j=0; j<random; j++){
+                chrom[child1][i+j] = chrom[parent2][i+j];
+                chrom[child2][i+j] = chrom[parent1][i+j];
+                n_cross[i+j] = 1; //交叉した位置を格納
+            }
         } else {                                //それ以外は交叉せずそのまま格納
-            chrom[child1][i] = chrom[parent1][i];
-            chrom[child2][i] = chrom[parent2][i];
+            for(j=0; j<random; j++){
+                chrom[child1][i+j] = chrom[parent1][i+j];
+                chrom[child2][i+j] = chrom[parent2][i+j];
+                n_cross[i+j] = 0; //交叉した位置を格納
+            }
         }
+        random = rand()%4;
     }
     //各子供の適合度を格納
     fitness[child1] = ObjFunc(child1);
@@ -538,10 +552,10 @@ void Mutation(int child){
 
     random = (double)rand()/(double)RAND_MAX; // 0<=random<1
     if((double)random < (double)(P_MUTATION)){  //確率%1未満なら突然変異
-        //突然変異位置（n_mutate=0,...,96）
+        // 突然変異位置（n_mutate=0,...,96）
         n_mutate = rand()%LEN_CHROM;
 
-        //突然変異
+        // 突然変異
         PrintMutation(BEFORE, child, n_mutate);
         scale = rand() % 25;
         if(scale == chrom[child][n_mutate]){     //もしランダムに選ばれた値が元の値と同じなら次の値にする
@@ -550,9 +564,26 @@ void Mutation(int child){
                 scale = 0;
         }
         chrom[child][n_mutate] = Num2Cdur[scale];
+
         fitness[child] = ObjFunc(child);
         PrintMutation(AFTER, child, n_mutate);
     }
+    // random = (double)rand()/(double)RAND_MAX; // 0<=random<1
+    // if((double)random < (double)(P_MUTATION)){  //確率%1未満なら突然変異
+    //     //突然変異2 前の音と同じ音にする
+    //     //突然変異位置（n_mutate=0,...,96）
+    //     n_mutate = rand()%(LEN_CHROM/3);
+
+    //     //突然変異
+    //     PrintMutation(BEFORE_MUTATION2, child, n_mutate);
+    //     if (n_mutate == 0 ) n_mutate =1;
+    //     chrom[child][n_mutate] = chrom[child][n_mutate-1];
+    //     chrom[child][n_mutate+32] = chrom[child][n_mutate+32-1];
+    //     chrom[child][n_mutate+64] = chrom[child][n_mutate+64-1];
+
+    //     fitness[child] = ObjFunc(child);
+    //     PrintMutation(AFTER, child, n_mutate);
+    // }
 }
 
 //担当：芳賀あかり
