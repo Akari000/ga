@@ -1,8 +1,7 @@
 /*------------------------------------------------------
 ・基本的なプログラムは担当者が作成
 ・それぞれの担当プログラムの合体＆エラー処理　⇒　芳賀あかり
-・エラーなし実行結果の不具合の原因究明　⇒　息優奈・芳賀あかり
-・上記の全体的なプログラム修正　⇒　芳賀あかり　（選択関数の修正のみ息優奈）
+・エラーなし実行結果の不具合の原因究明＆修正　⇒　息優奈・芳賀あかり
 --------------------------------------------------------*/
 
 //担当：息優奈・芳賀あかり
@@ -476,7 +475,7 @@ void Crossover(int parent1, int parent2, int child1, int child2){
     
     //交叉
     PrintCrossover(BEFORE, parent1, parent2, child1, child2, n_cross);
-
+    
     for(i=0; i<LEN_CHROM; i++){
         if((double)rand()/RAND_MAX < P_CROSS){  //確率0.5で交叉
             chrom[child1][i] = chrom[parent2][i];
@@ -509,6 +508,11 @@ void Mutation(int child){
         //突然変異
         PrintMutation(BEFORE, child, n_mutate);
         scale = rand() % 25;
+        if(scale == chrom[child][n_mutate]){     //もしランダムに選ばれた値が元の値と同じなら次の値にする
+            scale += 1;
+            if(scale > 24)  //もしNum2Cdurの要素数を超える数値になったら0にする
+                scale = 0;
+        }
         chrom[child][n_mutate] = Num2Cdur[scale];
         fitness[child] = ObjFunc(child);
         PrintMutation(AFTER, child, n_mutate);
@@ -519,12 +523,12 @@ void Mutation(int child){
 void Statistics(){
     int i;
     max = 0;
-    min = POP_SIZE;
+    min = 1000;
     sumfitness=0;
 
     for(i=0;i<POP_SIZE;i++){
         if(fitness[i]>max) max=fitness[i];
-        else if(fitness[i]<max){
+        else if(fitness[i]<min){
             min = fitness[i];
             n_min = i;
         }
@@ -538,15 +542,15 @@ void Generation(int gen){
     int parent1, parent2; //親の要素数を格納
     int child1, child2;   //子供の要素数を格納
     int n_gen = 3;
-    int n_delete = 7;     //子供に置き換える除去する個体の要素数を格納
+    int n_delete = 6;     //子供に置き換える除去する個体の要素数を格納
     int i, j;
 
     //世代交替（？）
-    PrintStatistics(gen);
     Statistics();
+    PrintStatistics(gen);
     Select();   //どっちかというとソート
     for(i=0; i<(n_gen-1); i++){     //(1,2),(1,3),(2,3)の順で子供*2を作る
-       for(j=i+1; j<n_gen; j++) 
+       for(j=i+1; j<n_gen; j++){
           parent1 = sort_chrom[i];  //適応度の高い個体の要素順に並べたsort_chromから取り出す
           parent2 = sort_chrom[j];  //上記に同じ
           child1 = sort_chrom[n_delete];        //適応度が7～12番目の個体を新しい子供で置き換えていく
@@ -556,6 +560,7 @@ void Generation(int gen){
           Mutation(child2);
 
           n_delete = n_delete + 2;
+       }
     }
     for(i=0; i<POP_SIZE; i++){ 
        for(j=0; j<LEN_CHROM/3; j++){
@@ -565,9 +570,10 @@ void Generation(int gen){
        }
     }
     P_CROSS = P_CROSS * exp((double)-gen/10.0);
+    if(P_CROSS < 0.01)  P_CROSS = 0;     //交叉率が0.01を下回ったら交叉率を0に
 }
 
-//担当：息優奈
+//担当：息優奈・芳賀あかり
 //メイン関数
 int main(int argc, char**argv)
 {
@@ -578,7 +584,7 @@ int main(int argc, char**argv)
     FileOpenError(fp);
     fclose(fp);
 
-    fp = fopen("avarage.txt", "w");
+    fp = fopen("average.txt", "w");
     FileOpenError(fp);
     fclose(fp);
 
