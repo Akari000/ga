@@ -11,7 +11,7 @@
 #include <time.h>
 #include <string.h>
 
-#define MAX_GEN      15  //最大世代交替
+#define MAX_GEN      20  //最大世代交替
 #define POP_SIZE     12  //集団のサイズ
 #define LEN_CHROM    16*3//一個体の遺伝子の長さ
 #define LEN_SOUND    24+1 //音数(無音は0)
@@ -452,8 +452,8 @@ int ObjFunc(int i){
     score_rhythm = ScoreRhythm(i)*16;
     printf("====================objfunc======================\n");
     printf("score_hz: %d, score_rhythm: %d, score_chord*30: %d, score_interval*3: %d, score_n_chord*20: %d\n", 
-            score_hz, score_rhythm, score_chord*25, score_interval*2, score_n_chord*10);
-    return score_hz + score_rhythm + score_chord*25 + score_interval*2 + score_n_chord*10;
+            score_hz, score_rhythm, score_chord*50, score_interval*2, score_n_chord*10);
+    return score_hz + score_rhythm + score_chord*50 + score_interval*2 + score_n_chord*10;
 }
 
 //担当：芳賀あかり
@@ -461,7 +461,7 @@ int ObjFunc(int i){
 void Initialize(){
     int i, j, k, len, scale1, scale2, scale3;
     // 長さ3以下の音で初期化
-    len = rand()%3 + 1; //1~3の数字
+    len = rand()%2 + 1; //1~3の数字
     for(i=0;i<POP_SIZE;i++){
         j=0;
         while(j<LEN_CHROM/3){

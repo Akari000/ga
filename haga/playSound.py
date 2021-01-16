@@ -60,7 +60,10 @@ with open(filename) as f:
     old_sound2 = 0
     old_sound3 = 0
 
-    for line in lines:
+    i = 0
+    while(i<len(lines)):
+        print(i)
+        line = lines[i]
         sound1 = int(re.findall('(\d+) (\d+) (\d+)', line)[0][0])
         sound2 = int(re.findall('(\d+) (\d+) (\d+)', line)[0][1])
         sound3 = int(re.findall('(\d+) (\d+) (\d+)', line)[0][2])
@@ -69,12 +72,14 @@ with open(filename) as f:
             old_sound1 = sound1
             old_sound2 = sound2
             old_sound3 = sound3
+            i += 2
             continue
 
         play(stream, Num2Hz[sound1], Num2Hz[sound2], Num2Hz[sound3], 0.7)
         old_sound1 = sound1
         old_sound2 = sound2
         old_sound3 = sound3
+        i += 1
 
 # ストリームを閉じる
 stream.close()
